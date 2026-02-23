@@ -14,6 +14,7 @@ class GatePassRequest {
   final GatePassStatus status;
   final String? rejectionReason;
   final String? department;
+  final String? semester; // Added semester
   final DateTime? exitDateTime;
   final DateTime? returnDateTime;
 
@@ -29,6 +30,7 @@ class GatePassRequest {
     this.status = GatePassStatus.pending,
     this.rejectionReason,
     this.department,
+    this.semester,
     this.exitDateTime,
     this.returnDateTime,
   });
@@ -79,6 +81,7 @@ class GatePassRequest {
       status: status ?? this.status,
       rejectionReason: rejectionReason ?? this.rejectionReason,
       department: department,
+      semester: semester,
       exitDateTime: exitDateTime ?? this.exitDateTime,
       returnDateTime: returnDateTime ?? this.returnDateTime,
     );
@@ -97,6 +100,7 @@ class GatePassRequest {
       'status': status.name,
       'rejectionReason': rejectionReason,
       'department': department,
+      'semester': semester,
       'exitDateTime': exitDateTime != null
           ? Timestamp.fromDate(exitDateTime!)
           : null,
@@ -122,6 +126,7 @@ class GatePassRequest {
       ),
       rejectionReason: map['rejectionReason'],
       department: map['department'],
+      semester: map['semester'],
       exitDateTime: map['exitDateTime'] != null
           ? (map['exitDateTime'] as Timestamp).toDate()
           : null,

@@ -8,6 +8,7 @@ import 'providers/auth_provider.dart';
 import 'providers/gate_pass_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/complete_profile_screen.dart';
+import 'screens/auth/splash_screen.dart';
 import 'screens/student/student_dashboard.dart';
 import 'screens/staff/staff_dashboard.dart';
 import 'screens/hod/hod_dashboard.dart';
@@ -48,6 +49,11 @@ class RootScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
+        // 0. Show Splash Screen while checking initial Auth status
+        if (!auth.isInitialized) {
+          return const SplashScreen();
+        }
+
         // 1. Check if user is authenticated (Firebase Auth)
         if (!auth.isAuthenticated) {
           return const LoginScreen();
@@ -57,9 +63,7 @@ class RootScreen extends StatelessWidget {
         if (!auth.hasProfile) {
           // While profile is loading, show a loader
           if (auth.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const SplashScreen(); // Show splash during individual profile loads too
           }
           // If not loading and no profile, force profile completion
           return const CompleteProfileScreen();

@@ -17,33 +17,36 @@ class MyRequestsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("My Requests")),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          final auth = context.read<AuthProvider>();
-          if (auth.firebaseUser != null) {
-            context.read<GatePassProvider>().listenToStudentRequests(
-              auth.firebaseUser!.uid,
-            );
-          }
-          await Future.delayed(const Duration(seconds: 1));
-        },
-        child: requests.isEmpty
-            ? ListView(
-                children: const [
-                  SizedBox(height: 100),
-                  Center(child: Text("No requests found")),
-                ],
-              )
-            : ListView.separated(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20),
-                itemCount: requests.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final request = requests[index];
-                  return _buildRequestCard(context, request);
-                },
-              ),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            final auth = context.read<AuthProvider>();
+            if (auth.firebaseUser != null) {
+              context.read<GatePassProvider>().listenToStudentRequests(
+                auth.firebaseUser!.uid,
+              );
+            }
+            await Future.delayed(const Duration(seconds: 1));
+          },
+          child: requests.isEmpty
+              ? ListView(
+                  children: const [
+                    SizedBox(height: 100),
+                    Center(child: Text("No requests found")),
+                  ],
+                )
+              : ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(20),
+                  itemCount: requests.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final request = requests[index];
+                    return _buildRequestCard(context, request);
+                  },
+                ),
+        ),
       ),
     );
   }

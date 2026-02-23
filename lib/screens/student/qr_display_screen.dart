@@ -12,62 +12,65 @@ class QRDisplayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Gate Pass QR")),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: QrImageView(
+                    data: request.id,
+                    version: QrVersions.auto,
+                    size: 250.0,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: AppColors.primary,
                     ),
-                  ],
-                ),
-                child: QrImageView(
-                  data: request.id,
-                  version: QrVersions.auto,
-                  size: 250.0,
-                  eyeStyle: const QrEyeStyle(
-                    eyeShape: QrEyeShape.square,
-                    color: AppColors.primary,
-                  ),
-                  dataModuleStyle: const QrDataModuleStyle(
-                    dataModuleShape: QrDataModuleShape.square,
-                    color: AppColors.primary,
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 40),
-              Text(
-                "Pass ID: ${request.id}",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                const SizedBox(height: 40),
+                Text(
+                  "Pass ID: ${request.id}",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Show this QR code at the security gate",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 48),
-              _buildInfoRow("Student", request.studentName),
-              _buildInfoRow(
-                "Validity",
-                "${request.fromTime} to ${request.toTime}",
-              ),
-              _buildInfoRow("Reason", request.reason),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  "Show this QR code at the security gate",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 48),
+                _buildInfoRow("Student", request.studentName),
+                _buildInfoRow(
+                  "Validity",
+                  "${request.fromTime} to ${request.toTime}",
+                ),
+                _buildInfoRow("Reason", request.reason),
+              ],
+            ),
           ),
         ),
       ),

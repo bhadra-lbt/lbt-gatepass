@@ -90,147 +90,152 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Apply Gate Pass")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              "Pass Details",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Reason for Leave",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                IconButton(
-                  onPressed: _listen,
-                  icon: Icon(
-                    _isListening ? Icons.mic : Icons.mic_none,
-                    color: _isListening ? AppColors.error : AppColors.primary,
-                  ),
-                  tooltip: "Speak your reason",
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _reasonController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: _isListening
-                    ? "Listening..."
-                    : "Enter or speak the reason...",
-                suffixIcon: _isListening
-                    ? const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : null,
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                "Pass Details",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 24),
-            const Text("Date", style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            _buildPickerTile(
-              icon: Icons.calendar_today_rounded,
-              text: DateFormat('EEE, dd MMM yyyy').format(_selectedDate),
-              onTap: () => _selectDate(context),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "From Time",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPickerTile(
-                        icon: Icons.access_time_rounded,
-                        text: _fromTime.format(context),
-                        onTap: () => _selectTime(context, true),
-                      ),
-                    ],
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Reason for Leave",
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "To Time",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPickerTile(
-                        icon: Icons.access_time_rounded,
-                        text: _toTime.format(context),
-                        onTap: () => _selectTime(context, false),
-                      ),
-                    ],
+                  IconButton(
+                    onPressed: _listen,
+                    icon: Icon(
+                      _isListening ? Icons.mic : Icons.mic_none,
+                      color: _isListening ? AppColors.error : AppColors.primary,
+                    ),
+                    tooltip: "Speak your reason",
                   ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _reasonController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: _isListening
+                      ? "Listening..."
+                      : "Enter or speak the reason...",
+                  suffixIcon: _isListening
+                      ? const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : null,
                 ),
-              ],
-            ),
-            const SizedBox(height: 48),
-            ElevatedButton(
-              onPressed: gatePassProvider.isLoading
-                  ? null
-                  : () async {
-                      if (_reasonController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please enter a reason"),
-                          ),
+              ),
+              const SizedBox(height: 24),
+              const Text("Date", style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              _buildPickerTile(
+                icon: Icons.calendar_today_rounded,
+                text: DateFormat('EEE, dd MMM yyyy').format(_selectedDate),
+                onTap: () => _selectDate(context),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "From Time",
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildPickerTile(
+                          icon: Icons.access_time_rounded,
+                          text: _fromTime.format(context),
+                          onTap: () => _selectTime(context, true),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "To Time",
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildPickerTile(
+                          icon: Icons.access_time_rounded,
+                          text: _toTime.format(context),
+                          onTap: () => _selectTime(context, false),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 48),
+              ElevatedButton(
+                onPressed: gatePassProvider.isLoading
+                    ? null
+                    : () async {
+                        if (_reasonController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Please enter a reason"),
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (auth.firebaseUser == null) return;
+
+                        final newRequest = GatePassRequest(
+                          id: "GP${DateTime.now().millisecondsSinceEpoch % 10000}",
+                          studentName: auth.userName ?? "Unknown",
+                          studentId: auth.firebaseUser!.uid,
+                          registerNumber: auth.userProfile?['registerNumber'],
+                          reason: _reasonController.text,
+                          date: _selectedDate,
+                          fromTime: _fromTime.format(context),
+                          toTime: _toTime.format(context),
+                          status: GatePassStatus.pending,
+                          department: auth.userProfile?['department'],
+                          semester: auth
+                              .userProfile?['semester'], // Included Semester
                         );
-                        return;
-                      }
 
-                      if (auth.firebaseUser == null) return;
-
-                      final newRequest = GatePassRequest(
-                        id: "GP${DateTime.now().millisecondsSinceEpoch % 10000}",
-                        studentName: auth.userName ?? "Unknown",
-                        studentId: auth.firebaseUser!.uid,
-                        registerNumber: auth.userProfile?['registerNumber'],
-                        reason: _reasonController.text,
-                        date: _selectedDate,
-                        fromTime: _fromTime.format(context),
-                        toTime: _toTime.format(context),
-                        status: GatePassStatus.pending,
-                        department: auth.userProfile?['department'],
-                      );
-
-                      await context.read<GatePassProvider>().createRequest(
-                        newRequest,
-                      );
-                      if (mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Gate Pass Request Submitted"),
-                          ),
+                        await context.read<GatePassProvider>().createRequest(
+                          newRequest,
                         );
-                      }
-                    },
-              child: gatePassProvider.isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Submit Request"),
-            ),
-          ],
+                        if (mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Gate Pass Request Submitted"),
+                            ),
+                          );
+                        }
+                      },
+                child: gatePassProvider.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("Submit Request"),
+              ),
+            ],
+          ),
         ),
       ),
     );

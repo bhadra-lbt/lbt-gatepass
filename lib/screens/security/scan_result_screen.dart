@@ -179,6 +179,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
+        top: false,
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
@@ -212,6 +213,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   child: Column(
                     children: [
                       _buildResultRow("Student", widget.request!.studentName),
+                      _buildResultRow(
+                        "Depart/Sem",
+                        "${widget.request!.department ?? 'N/A'} (S${widget.request!.semester ?? '?'})",
+                      ),
                       _buildResultRow(
                         "Reg No",
                         widget.request!.registerNumber ?? "N/A",

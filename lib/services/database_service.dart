@@ -31,7 +31,11 @@ class DatabaseService {
     );
 
     if (department != null && department != "All") {
-      query = query.where('department', isEqualTo: department);
+      if (department == "CSE") {
+        query = query.where('department', whereIn: ['CSE 1', 'CSE 2']);
+      } else {
+        query = query.where('department', isEqualTo: department);
+      }
     }
 
     return query.snapshots().map((snapshot) {

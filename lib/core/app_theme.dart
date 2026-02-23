@@ -46,6 +46,11 @@ class AppTheme {
         bodyLarge: GoogleFonts.outfit(color: AppColors.textPrimary),
         bodyMedium: GoogleFonts.outfit(color: AppColors.textSecondary),
       ),
+      appBarTheme: AppBarTheme(
+        surfaceTintColor: Colors.white,
+        elevation: 10,
+        backgroundColor: Colors.white,
+      ),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

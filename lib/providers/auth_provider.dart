@@ -8,6 +8,7 @@ class AuthProvider extends ChangeNotifier {
   User? _firebaseUser;
   Map<String, dynamic>? _userProfile;
   bool _isLoading = false;
+  bool _isInitialized = false;
 
   AuthProvider() {
     _authService.user.listen((user) async {
@@ -17,6 +18,7 @@ class AuthProvider extends ChangeNotifier {
       } else {
         await refreshProfile(user.uid);
       }
+      _isInitialized = true;
       notifyListeners();
     });
   }
@@ -24,6 +26,7 @@ class AuthProvider extends ChangeNotifier {
   User? get firebaseUser => _firebaseUser;
   Map<String, dynamic>? get userProfile => _userProfile;
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
   bool get isAuthenticated => _firebaseUser != null;
   bool get hasProfile => _userProfile != null;
 
@@ -89,6 +92,7 @@ class AuthProvider extends ChangeNotifier {
     required String department,
     required String registerNumber,
     required String phone,
+    String? semester, // Added semester
   }) async {
     if (_firebaseUser == null) return;
 
@@ -104,8 +108,20 @@ class AuthProvider extends ChangeNotifier {
         department: department,
         registerNumber: registerNumber,
         phone: phone,
+        semester: semester,
       );
       await refreshProfile(_firebaseUser!.uid);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resetPassword(String email) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.sendPasswordResetEmail(email);
     } finally {
       _isLoading = false;
       notifyListeners();

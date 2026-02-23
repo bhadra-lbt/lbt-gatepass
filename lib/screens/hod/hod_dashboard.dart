@@ -13,23 +13,24 @@ class HODDashboard extends StatefulWidget {
 }
 
 class _HODDashboardState extends State<HODDashboard> {
-  String _selectedDept = "CSE";
-  final List<String> _departments = ["All", "CSE", "ECE", "ME", "CE", "EEE"];
+  String? _hodDept;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = context.read<AuthProvider>();
-      _selectedDept = auth.userProfile?['department'] ?? "CSE";
+      _hodDept = auth.userProfile?['department'];
       _listenToRequests();
     });
   }
 
   void _listenToRequests() {
-    context.read<GatePassProvider>().listenToPendingRequests(
-      department: _selectedDept == "All" ? null : _selectedDept,
-    );
+    if (_hodDept != null) {
+      context.read<GatePassProvider>().listenToPendingRequests(
+        department: _hodDept,
+      );
+    }
   }
 
   @override
@@ -38,119 +39,114 @@ class _HODDashboardState extends State<HODDashboard> {
     final provider = context.watch<GatePassProvider>();
     final pendingRequests = provider.pendingRequests;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("HOD Portal"),
-        actions: [
-          IconButton(
-            onPressed: () => auth.logout(),
-            icon: const Icon(Icons.logout),
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
-              ),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("HOD Portal"),
+          
+          actions: [
+            IconButton(
+              onPressed: () => auth.logout(),
+              icon: const Icon(Icons.logout),
             ),
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            const SizedBox(width: 16),
+          ],
+        ),
+        body: SafeArea(
+          top: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
+                ),
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "HOD Office",
-                          style: TextStyle(color: Colors.white70),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "HOD Office",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              auth.userName ?? "HOD",
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(color: Colors.white),
+                            ),
+                          ],
                         ),
-                        Text(
-                          auth.userName ?? "HOD",
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(color: Colors.white),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _hodDept ?? "Unknown",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedDept,
-                          dropdownColor: AppColors.primary,
-                          style: const TextStyle(color: Colors.white),
-                          icon: const Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.white,
-                          ),
-                          items: _departments.map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() => _selectedDept = val);
-                              _listenToRequests();
-                            }
-                          },
-                        ),
+                    const SizedBox(height: 24),
+                    Text(
+                      "${pendingRequests.length} Pending Approvals",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  "${pendingRequests.length} Pending Approvals in $_selectedDept",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    _listenToRequests();
+                    await Future.delayed(const Duration(seconds: 1));
+                  },
+                  child: pendingRequests.isEmpty
+                      ? ListView(
+                          children: const [
+                            SizedBox(height: 100),
+                            Center(child: Text("No pending requests found.")),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(20),
+                          itemCount: pendingRequests.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final request = pendingRequests[index];
+                            return _buildApprovalCard(context, request);
+                          },
+                        ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                _listenToRequests();
-                await Future.delayed(const Duration(seconds: 1));
-              },
-              child: pendingRequests.isEmpty
-                  ? ListView(
-                      children: const [
-                        SizedBox(height: 100),
-                        Center(child: Text("No pending requests found.")),
-                      ],
-                    )
-                  : ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(20),
-                      itemCount: pendingRequests.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final request = pendingRequests[index];
-                        return _buildApprovalCard(context, request);
-                      },
-                    ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -182,7 +178,7 @@ class _HODDashboardState extends State<HODDashboard> {
                         ),
                       ),
                       Text(
-                        "ID: ${request.studentId} • ${request.department ?? 'N/A'} Dept",
+                        "ID: ${request.studentId} • S${request.semester ?? '?'} ${request.department ?? 'N/A'}",
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,

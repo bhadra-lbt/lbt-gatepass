@@ -54,91 +54,94 @@ class _StudentDashboardState extends State<StudentDashboard> {
           const SizedBox(width: 16),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          final auth = context.read<AuthProvider>();
-          if (auth.firebaseUser != null) {
-            context.read<GatePassProvider>().listenToStudentRequests(
-              auth.firebaseUser!.uid,
-            );
-          }
-          await Future.delayed(const Duration(seconds: 1));
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Welcome,", style: Theme.of(context).textTheme.bodyLarge),
-              Text(
-                auth.userName ?? "Student",
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 32),
-              _buildActionCard(
-                context,
-                title: "Apply Gate Pass",
-                subtitle: "Request permission to leave campus",
-                icon: Icons.assignment_outlined,
-                color: AppColors.primary,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ApplyPassScreen()),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            final auth = context.read<AuthProvider>();
+            if (auth.firebaseUser != null) {
+              context.read<GatePassProvider>().listenToStudentRequests(
+                auth.firebaseUser!.uid,
+              );
+            }
+            await Future.delayed(const Duration(seconds: 1));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Welcome,", style: Theme.of(context).textTheme.bodyLarge),
+                Text(
+                  auth.userName ?? "Student",
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildActionCard(
-                context,
-                title: "My Requests",
-                subtitle: "Check status of your applications",
-                icon: Icons.history_edu_outlined,
-                color: AppColors.secondary,
-                onTap: () => Navigator.push(
+                const SizedBox(height: 32),
+                _buildActionCard(
                   context,
-                  MaterialPageRoute(builder: (_) => const MyRequestsScreen()),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                "Recent Activity",
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              if (recentRequest != null)
-                Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: _getStatusColor(
-                        recentRequest.status,
-                      ).withOpacity(0.1),
-                      child: Icon(
-                        _getStatusIcon(recentRequest.status),
-                        color: _getStatusColor(recentRequest.status),
-                      ),
-                    ),
-                    title: Text(recentRequest.reason),
-                    subtitle: Text(
-                      "Reg No: ${recentRequest.registerNumber ?? 'N/A'} • STATUS: ${recentRequest.status.name.toUpperCase()}",
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MyRequestsScreen(),
-                      ),
-                    ),
-                  ),
-                )
-              else
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: Text("No recent requests"),
+                  title: "Apply Gate Pass",
+                  subtitle: "Request permission to leave campus",
+                  icon: Icons.assignment_outlined,
+                  color: AppColors.primary,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ApplyPassScreen()),
                   ),
                 ),
-            ],
+                const SizedBox(height: 16),
+                _buildActionCard(
+                  context,
+                  title: "My Requests",
+                  subtitle: "Check status of your applications",
+                  icon: Icons.history_edu_outlined,
+                  color: AppColors.secondary,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MyRequestsScreen()),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  "Recent Activity",
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                if (recentRequest != null)
+                  Card(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: _getStatusColor(
+                          recentRequest.status,
+                        ).withOpacity(0.1),
+                        child: Icon(
+                          _getStatusIcon(recentRequest.status),
+                          color: _getStatusColor(recentRequest.status),
+                        ),
+                      ),
+                      title: Text(recentRequest.reason),
+                      subtitle: Text(
+                        "Reg No: ${recentRequest.registerNumber ?? 'N/A'} • STATUS: ${recentRequest.status.name.toUpperCase()}",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MyRequestsScreen(),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text("No recent requests"),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

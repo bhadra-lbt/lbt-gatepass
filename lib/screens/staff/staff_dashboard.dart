@@ -41,68 +41,71 @@ class _StaffDashboardState extends State<StaffDashboard> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            color: AppColors.primary,
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Faculty Dashboard",
-                  style: TextStyle(color: Colors.white70),
-                ),
-                Text(
-                  auth.userName ?? "Advisor",
-                  style: Theme.of(
-                    context,
-                  ).textTheme.headlineMedium?.copyWith(color: Colors.white),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "${pendingRequests.length} Pending Approvals",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+      body: SafeArea(
+        top: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              color: AppColors.primary,
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Faculty Dashboard",
+                    style: TextStyle(color: Colors.white70),
                   ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                final auth = context.read<AuthProvider>();
-                context.read<GatePassProvider>().listenToPendingRequests(
-                  department: auth.userProfile?['department'],
-                );
-                await Future.delayed(const Duration(seconds: 1));
-              },
-              child: pendingRequests.isEmpty
-                  ? ListView(
-                      children: const [
-                        SizedBox(height: 100),
-                        Center(
-                          child: Text("All caught up! No pending requests."),
-                        ),
-                      ],
-                    )
-                  : ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(20),
-                      itemCount: pendingRequests.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final request = pendingRequests[index];
-                        return _buildApprovalCard(context, request);
-                      },
+                  Text(
+                    auth.userName ?? "Advisor",
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineMedium?.copyWith(color: Colors.white),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "${pendingRequests.length} Pending Approvals",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  final auth = context.read<AuthProvider>();
+                  context.read<GatePassProvider>().listenToPendingRequests(
+                    department: auth.userProfile?['department'],
+                  );
+                  await Future.delayed(const Duration(seconds: 1));
+                },
+                child: pendingRequests.isEmpty
+                    ? ListView(
+                        children: const [
+                          SizedBox(height: 100),
+                          Center(
+                            child: Text("All caught up! No pending requests."),
+                          ),
+                        ],
+                      )
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(20),
+                        itemCount: pendingRequests.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final request = pendingRequests[index];
+                          return _buildApprovalCard(context, request);
+                        },
+                      ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -128,7 +131,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
                       ),
                     ),
                     Text(
-                      "ID: ${request.studentId}",
+                      "ID: ${request.studentId} • S${request.semester ?? '?'} ${request.department ?? 'N/A'}",
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,

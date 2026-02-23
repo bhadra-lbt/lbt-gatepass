@@ -46,6 +46,7 @@ class AuthService {
     required String department,
     required String registerNumber,
     required String phone,
+    String? semester, // Added semester
   }) async {
     await _firestore.collection('users').doc(uid).set({
       'name': name,
@@ -54,8 +55,14 @@ class AuthService {
       'department': department,
       'registerNumber': registerNumber,
       'phone': phone,
+      'semester': semester,
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  // Send Password Reset Email
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
   }
 
   // Logout

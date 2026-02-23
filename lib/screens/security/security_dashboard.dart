@@ -50,53 +50,56 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
           const SizedBox(width: 16),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          context.read<GatePassProvider>().listenToRecentActivity();
-          await Future.delayed(const Duration(seconds: 1));
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 32),
-              _buildScannerButton(context),
-              const SizedBox(height: 24),
-              _buildStatsRow(
-                todayActivity.length.toString(),
-                todayActivity.length.toString(),
-              ), // Simplified authorized count
-              const SizedBox(height: 32),
-              const Text(
-                "Recent Gate Activity",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              if (recentActivity.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Text(
-                      "No recent activity recorded",
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  ),
-                )
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: recentActivity.take(10).length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final activity = recentActivity[index];
-                    return _buildActivityCard(activity);
-                  },
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            context.read<GatePassProvider>().listenToRecentActivity();
+            await Future.delayed(const Duration(seconds: 1));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 32),
+                _buildScannerButton(context),
+                const SizedBox(height: 24),
+                _buildStatsRow(
+                  todayActivity.length.toString(),
+                  todayActivity.length.toString(),
+                ), // Simplified authorized count
+                const SizedBox(height: 32),
+                const Text(
+                  "Recent Gate Activity",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-            ],
+                const SizedBox(height: 16),
+                if (recentActivity.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Text(
+                        "No recent activity recorded",
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: recentActivity.take(10).length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final activity = recentActivity[index];
+                      return _buildActivityCard(activity);
+                    },
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -207,7 +210,7 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          "${isReturn ? 'Returned' : 'Exited'} • ${activity.registerNumber ?? 'N/A'}",
+          "${isReturn ? 'Returned' : 'Exited'} • S${activity.semester ?? '?'}, ${activity.department ?? 'N/A'}",
           style: const TextStyle(fontSize: 12),
         ),
         trailing: Column(
