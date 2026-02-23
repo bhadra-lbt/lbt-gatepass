@@ -1,25 +1,114 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_role.dart';
+import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  UserRole? _userRole;
-  String? _userName;
+  final AuthService _authService = AuthService();
+  User? _firebaseUser;
+  Map<String, dynamic>? _userProfile;
+  bool _isLoading = false;
 
-  UserRole? get userRole => _userRole;
-  String? get userName => _userName;
+  AuthProvider() {
+    _authService.user.listen((user) async {
+      _firebaseUser = user;
+      if (user == null) {
+        _userProfile = null;
+      } else {
+        await refreshProfile(user.uid);
+      }
+      notifyListeners();
+    });
+  }
 
-  bool get isAuthenticated => _userRole != null;
+  User? get firebaseUser => _firebaseUser;
+  Map<String, dynamic>? get userProfile => _userProfile;
+  bool get isLoading => _isLoading;
+  bool get isAuthenticated => _firebaseUser != null;
+  bool get hasProfile => _userProfile != null;
 
-  void login(String email, String password, UserRole role) {
-    // For demo purposes, we accept any login and set the role based on the selection
-    _userRole = role;
-    _userName = role == UserRole.student ? "John Joseph" : "Prof. Smith";
+  UserRole? get userRole {
+    if (_userProfile == null) return null;
+    final roleStr = _userProfile!['role'] as String?;
+    try {
+      return UserRole.values.firstWhere((e) => e.name == roleStr);
+    } catch (_) {
+      return UserRole.student;
+    }
+  }
+
+  String? get userName => _userProfile?['name'];
+
+  Future<void> login(String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final cred = await _authService.login(email, password);
+      await refreshProfile(cred.user?.uid);
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> signUp(String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final cred = await _authService.signUp(email, password);
+      await refreshProfile(cred.user?.uid);
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> refreshProfile(String? uid) async {
+    if (uid != null) {
+      _userProfile = await _authService.getUserProfile(uid);
+      notifyListeners();
+    }
+  }
+
+  Future<void> logout() async {
+    await _authService.logout();
+    _firebaseUser = null;
+    _userProfile = null;
     notifyListeners();
   }
 
-  void logout() {
-    _userRole = null;
-    _userName = null;
+  Future<void> completeProfile({
+    required String name,
+    required UserRole role,
+    required String department,
+    required String registerNumber,
+    required String phone,
+  }) async {
+    if (_firebaseUser == null) return;
+
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      await _authService.createUserProfile(
+        uid: _firebaseUser!.uid,
+        name: name,
+        email: _firebaseUser!.email!,
+        role: role,
+        department: department,
+        registerNumber: registerNumber,
+        phone: phone,
+      );
+      await refreshProfile(_firebaseUser!.uid);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

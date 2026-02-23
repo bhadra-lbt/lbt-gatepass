@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'core/app_theme.dart';
 import 'models/user_role.dart';
 import 'providers/auth_provider.dart';
 import 'providers/gate_pass_provider.dart';
-import 'screens/login_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/complete_profile_screen.dart';
 import 'screens/student/student_dashboard.dart';
 import 'screens/staff/staff_dashboard.dart';
 import 'screens/hod/hod_dashboard.dart';
 import 'screens/security/security_dashboard.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,10 +48,24 @@ class RootScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
+        // 1. Check if user is authenticated (Firebase Auth)
         if (!auth.isAuthenticated) {
           return const LoginScreen();
         }
 
+        // 2. Check if user has a profile document in Firestore
+        if (!auth.hasProfile) {
+          // While profile is loading, show a loader
+          if (auth.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          // If not loading and no profile, force profile completion
+          return const CompleteProfileScreen();
+        }
+
+        // 3. Navigate to respective dashboard based on Firestore role
         switch (auth.userRole) {
           case UserRole.student:
             return const StudentDashboard();
@@ -61,8 +75,8 @@ class RootScreen extends StatelessWidget {
             return const HODDashboard();
           case UserRole.security:
             return const SecurityDashboard();
-          case null:
-            return const LoginScreen();
+          default:
+            return const CompleteProfileScreen();
         }
       },
     );

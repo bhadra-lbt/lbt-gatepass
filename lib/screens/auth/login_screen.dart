@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/app_theme.dart';
-import '../models/user_role.dart';
-import '../providers/auth_provider.dart';
+import '../../core/app_theme.dart';
+import '../../providers/auth_provider.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,10 +14,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  UserRole _selectedRole = UserRole.student;
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -61,48 +62,47 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 obscureText: true,
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<UserRole>(
-                    value: _selectedRole,
-                    isExpanded: true,
-                    onChanged: (role) {
-                      if (role != null) {
-                        setState(() {
-                          _selectedRole = role;
-                        });
-                      }
-                    },
-                    items: UserRole.values.map((role) {
-                      return DropdownMenuItem(
-                        value: role,
-                        child: Text("Login as ${role.label}"),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () {
-                  context.read<AuthProvider>().login(
-                    _emailController.text,
-                    _passwordController.text,
-                    _selectedRole,
-                  );
-                },
-                child: const Text("Sign In"),
+                onPressed: authProvider.isLoading
+                    ? null
+                    : () async {
+                        try {
+                          await authProvider.login(
+                            _emailController.text,
+                            _passwordController.text,
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.toString()),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      },
+                child: authProvider.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("Sign In"),
               ),
               const SizedBox(height: 24),
               TextButton(
-                onPressed: () {},
-                child: const Text("Forgot Password?"),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
+                  );
+                },
+                child: const Text("Don't have an account? Create one"),
               ),
             ],
           ),
