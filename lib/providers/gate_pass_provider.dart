@@ -1,45 +1,108 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/gate_pass.dart';
+import '../services/database_service.dart';
 
 class GatePassProvider extends ChangeNotifier {
-  final List<GatePassRequest> _requests = [
-    GatePassRequest(
-      id: "GP123",
-      studentName: "John Doe",
-      studentId: "ST001",
-      reason: "Medical Emergency",
-      date: DateTime.now(),
-      fromTime: "10:30 AM",
-      toTime: "02:00 PM",
-      status: GatePassStatus.approved,
-    ),
-    GatePassRequest(
-      id: "GP124",
-      studentName: "Jane Smith",
-      studentId: "ST002",
-      reason: "Hostel Visit",
-      date: DateTime.now(),
-      fromTime: "01:00 PM",
-      toTime: "04:00 PM",
-      status: GatePassStatus.pending,
-    ),
-  ];
+  final DatabaseService _dbService = DatabaseService();
 
-  List<GatePassRequest> get requests => _requests;
+  List<GatePassRequest> _studentRequests = [];
+  List<GatePassRequest> _pendingRequests = [];
+  List<GatePassRequest> _recentActivity = [];
+  bool _isLoading = false;
 
-  List<GatePassRequest> get pendingRequests =>
-      _requests.where((r) => r.status == GatePassStatus.pending).toList();
+  StreamSubscription? _studentSubscription;
+  StreamSubscription? _pendingSubscription;
+  StreamSubscription? _recentActivitySubscription;
+  String? _lastStudentId;
+  String? _lastDept;
 
-  void addRequest(GatePassRequest request) {
-    _requests.insert(0, request);
-    notifyListeners();
+  List<GatePassRequest> get studentRequests => _studentRequests;
+  List<GatePassRequest> get pendingRequests => _pendingRequests;
+  List<GatePassRequest> get recentActivity => _recentActivity;
+  bool get isLoading => _isLoading;
+
+  // Fetch requests for a specific student (real-time)
+  void listenToStudentRequests(String studentId) {
+    if (_lastStudentId == studentId) return; // Prevent duplicate listeners
+
+    _studentSubscription?.cancel();
+    _lastStudentId = studentId;
+
+    _studentSubscription = _dbService.getStudentRequests(studentId).listen((
+      requests,
+    ) {
+      // Sort locally by date descending
+      requests.sort((a, b) => b.date.compareTo(a.date));
+      _studentRequests = requests;
+      notifyListeners();
+    });
   }
 
-  void updateRequestStatus(String id, GatePassStatus status) {
-    final index = _requests.indexWhere((r) => r.id == id);
-    if (index != -1) {
-      _requests[index] = _requests[index].copyWith(status: status);
+  // Fetch pending requests for staff (real-time)
+  void listenToPendingRequests({String? department}) {
+    if (_lastDept == department) return;
+
+    _pendingSubscription?.cancel();
+    _lastDept = department;
+
+    _pendingSubscription = _dbService
+        .getPendingRequests(department: department)
+        .listen((requests) {
+          // Sort locally by date descending
+          requests.sort((a, b) => b.date.compareTo(a.date));
+          _pendingRequests = requests;
+          notifyListeners();
+        });
+  }
+
+  // Fetch recent gate activity (exited/returned)
+  void listenToRecentActivity() {
+    _recentActivitySubscription?.cancel();
+    _recentActivitySubscription = _dbService.getRecentGateActivity().listen((
+      requests,
+    ) {
+      _recentActivity = requests;
+      notifyListeners();
+    });
+  }
+
+  Future<void> createRequest(GatePassRequest request) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _dbService.createGatePassRequest(request);
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> updateStatus(
+    String id,
+    GatePassStatus status, {
+    String? reason,
+  }) async {
+    await _dbService.updateRequestStatus(id, status, rejectionReason: reason);
+  }
+
+  Future<GatePassRequest?> getRequestById(String id) async {
+    return await _dbService.getRequestById(id);
+  }
+
+  Future<void> logExit(String id) async {
+    await _dbService.logExit(id);
+  }
+
+  Future<void> logReturn(String id) async {
+    await _dbService.logReturn(id);
+  }
+
+  @override
+  void dispose() {
+    _studentSubscription?.cancel();
+    _pendingSubscription?.cancel();
+    _recentActivitySubscription?.cancel();
+    super.dispose();
   }
 }

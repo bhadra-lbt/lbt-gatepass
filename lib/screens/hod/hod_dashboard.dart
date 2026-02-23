@@ -14,7 +14,23 @@ class HODDashboard extends StatefulWidget {
 
 class _HODDashboardState extends State<HODDashboard> {
   String _selectedDept = "CSE";
-  final List<String> _departments = ["CSE", "ECE", "ME", "CE", "EEE"];
+  final List<String> _departments = ["All", "CSE", "ECE", "ME", "CE", "EEE"];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      _selectedDept = auth.userProfile?['department'] ?? "CSE";
+      _listenToRequests();
+    });
+  }
+
+  void _listenToRequests() {
+    context.read<GatePassProvider>().listenToPendingRequests(
+      department: _selectedDept == "All" ? null : _selectedDept,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,8 +104,10 @@ class _HODDashboardState extends State<HODDashboard> {
                             );
                           }).toList(),
                           onChanged: (val) {
-                            if (val != null)
+                            if (val != null) {
                               setState(() => _selectedDept = val);
+                              _listenToRequests();
+                            }
                           },
                         ),
                       ),
@@ -98,7 +116,7 @@ class _HODDashboardState extends State<HODDashboard> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  "${pendingRequests.length} Total Pending Approvals in $_selectedDept",
+                  "${pendingRequests.length} Pending Approvals in $_selectedDept",
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -108,20 +126,29 @@ class _HODDashboardState extends State<HODDashboard> {
             ),
           ),
           Expanded(
-            child: pendingRequests.isEmpty
-                ? const Center(
-                    child: Text("No pending requests for your department."),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: pendingRequests.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final request = pendingRequests[index];
-                      // For demo, we just show all but label it with the selected dept
-                      return _buildApprovalCard(context, request);
-                    },
-                  ),
+            child: RefreshIndicator(
+              onRefresh: () async {
+                _listenToRequests();
+                await Future.delayed(const Duration(seconds: 1));
+              },
+              child: pendingRequests.isEmpty
+                  ? ListView(
+                      children: const [
+                        SizedBox(height: 100),
+                        Center(child: Text("No pending requests found.")),
+                      ],
+                    )
+                  : ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      itemCount: pendingRequests.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final request = pendingRequests[index];
+                        return _buildApprovalCard(context, request);
+                      },
+                    ),
+            ),
           ),
         ],
       ),
@@ -155,7 +182,7 @@ class _HODDashboardState extends State<HODDashboard> {
                         ),
                       ),
                       Text(
-                        "ID: ${request.studentId} • $_selectedDept Dept",
+                        "ID: ${request.studentId} • ${request.department ?? 'N/A'} Dept",
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
@@ -204,7 +231,7 @@ class _HODDashboardState extends State<HODDashboard> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<GatePassProvider>().updateRequestStatus(
+                      context.read<GatePassProvider>().updateStatus(
                         request.id,
                         GatePassStatus.rejected,
                       );
@@ -222,7 +249,7 @@ class _HODDashboardState extends State<HODDashboard> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<GatePassProvider>().updateRequestStatus(
+                      context.read<GatePassProvider>().updateStatus(
                         request.id,
                         GatePassStatus.approved,
                       );

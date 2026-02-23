@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
 import 'qr_display_screen.dart';
 
@@ -12,25 +13,47 @@ class MyRequestsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<GatePassProvider>();
-    final requests = provider.requests;
+    final requests = provider.studentRequests;
 
     return Scaffold(
       appBar: AppBar(title: const Text("My Requests")),
-      body: requests.isEmpty
-          ? const Center(child: Text("No requests found"))
-          : ListView.separated(
-              padding: const EdgeInsets.all(20),
-              itemCount: requests.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final request = requests[index];
-                return _buildRequestCard(context, request);
-              },
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final auth = context.read<AuthProvider>();
+          if (auth.firebaseUser != null) {
+            context.read<GatePassProvider>().listenToStudentRequests(
+              auth.firebaseUser!.uid,
+            );
+          }
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        child: requests.isEmpty
+            ? ListView(
+                children: const [
+                  SizedBox(height: 100),
+                  Center(child: Text("No requests found")),
+                ],
+              )
+            : ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                itemCount: requests.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final request = requests[index];
+                  return _buildRequestCard(context, request);
+                },
+              ),
+      ),
     );
   }
 
   Widget _buildRequestCard(BuildContext context, GatePassRequest request) {
+    // Show QR code for both Approved (to exit) and Exited (to return)
+    final bool canShowQR =
+        request.status == GatePassStatus.approved ||
+        request.status == GatePassStatus.exited;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -59,6 +82,14 @@ class MyRequestsScreen extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              "Register Number: ${request.registerNumber ?? 'Not provided'}",
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -79,7 +110,7 @@ class MyRequestsScreen extends StatelessWidget {
                 Text("${request.fromTime} - ${request.toTime}"),
               ],
             ),
-            if (request.status == GatePassStatus.approved) ...[
+            if (canShowQR) ...[
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: () {
@@ -91,7 +122,11 @@ class MyRequestsScreen extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.qr_code_2_rounded),
-                label: const Text("Show QR Code"),
+                label: Text(
+                  request.status == GatePassStatus.exited
+                      ? "Show QR to Return"
+                      : "Show QR Code",
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.secondary,
                   minimumSize: const Size(double.infinity, 48),
@@ -131,6 +166,14 @@ class MyRequestsScreen extends StatelessWidget {
       case GatePassStatus.expired:
         color = AppColors.textSecondary;
         label = "Expired";
+        break;
+      case GatePassStatus.exited:
+        color = Colors.orange;
+        label = "Outside";
+        break;
+      case GatePassStatus.returned:
+        color = Colors.blue;
+        label = "Returned";
         break;
     }
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
 
 class ApplyPassScreen extends StatefulWidget {
@@ -17,6 +19,39 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _fromTime = TimeOfDay.now();
   TimeOfDay _toTime = TimeOfDay.now();
+
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+  }
+
+  Future<void> _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize(
+        onStatus: (val) {
+          if (val == 'done' || val == 'notListening') {
+            setState(() => _isListening = false);
+          }
+        },
+        onError: (val) => setState(() => _isListening = false),
+      );
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(
+          onResult: (val) => setState(() {
+            _reasonController.text = val.recognizedWords;
+          }),
+        );
+      }
+    } else {
+      setState(() => _isListening = false);
+      _speech.stop();
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -50,6 +85,9 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final gatePassProvider = context.watch<GatePassProvider>();
+
     return Scaffold(
       appBar: AppBar(title: const Text("Apply Gate Pass")),
       body: SingleChildScrollView(
@@ -57,18 +95,46 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text("Pass Details", style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 24),
             const Text(
-              "Reason for Leave",
-              style: TextStyle(fontWeight: FontWeight.w600),
+              "Pass Details",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Reason for Leave",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                IconButton(
+                  onPressed: _listen,
+                  icon: Icon(
+                    _isListening ? Icons.mic : Icons.mic_none,
+                    color: _isListening ? AppColors.error : AppColors.primary,
+                  ),
+                  tooltip: "Speak your reason",
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _reasonController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: "Enter the reason for your gate pass...",
+              decoration: InputDecoration(
+                hintText: _isListening
+                    ? "Listening..."
+                    : "Enter or speak the reason...",
+                suffixIcon: _isListening
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 24),
@@ -121,32 +187,48 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
             ),
             const SizedBox(height: 48),
             ElevatedButton(
-              onPressed: () {
-                if (_reasonController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please enter a reason")),
-                  );
-                  return;
-                }
+              onPressed: gatePassProvider.isLoading
+                  ? null
+                  : () async {
+                      if (_reasonController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please enter a reason"),
+                          ),
+                        );
+                        return;
+                      }
 
-                final newRequest = GatePassRequest(
-                  id: "GP${DateTime.now().millisecondsSinceEpoch % 10000}",
-                  studentName: "John Doe",
-                  studentId: "ST001",
-                  reason: _reasonController.text,
-                  date: _selectedDate,
-                  fromTime: _fromTime.format(context),
-                  toTime: _toTime.format(context),
-                  status: GatePassStatus.pending,
-                );
+                      if (auth.firebaseUser == null) return;
 
-                context.read<GatePassProvider>().addRequest(newRequest);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Gate Pass Request Submitted")),
-                );
-              },
-              child: const Text("Submit Request"),
+                      final newRequest = GatePassRequest(
+                        id: "GP${DateTime.now().millisecondsSinceEpoch % 10000}",
+                        studentName: auth.userName ?? "Unknown",
+                        studentId: auth.firebaseUser!.uid,
+                        registerNumber: auth.userProfile?['registerNumber'],
+                        reason: _reasonController.text,
+                        date: _selectedDate,
+                        fromTime: _fromTime.format(context),
+                        toTime: _toTime.format(context),
+                        status: GatePassStatus.pending,
+                        department: auth.userProfile?['department'],
+                      );
+
+                      await context.read<GatePassProvider>().createRequest(
+                        newRequest,
+                      );
+                      if (mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Gate Pass Request Submitted"),
+                          ),
+                        );
+                      }
+                    },
+              child: gatePassProvider.isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Submit Request"),
             ),
           ],
         ),

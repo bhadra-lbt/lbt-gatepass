@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
+import '../../providers/gate_pass_provider.dart';
 import 'scan_result_screen.dart';
 
 class SecurityScannerScreen extends StatefulWidget {
@@ -76,17 +78,20 @@ class _SecurityScannerScreenState extends State<SecurityScannerScreen> {
     );
   }
 
-  void _handleScan(String code) {
-    // For demo:
-    // If code contains "GP1", it's valid
-    // If "GP2", it's expired
-    // Otherwise rejected
+  void _handleScan(String code) async {
+    // Show a small loader or just proceed to result screen which can handle loading if needed
+    // But here we'll fetch first to keep it simple
+    final provider = context.read<GatePassProvider>();
+    final request = await provider.getRequestById(code);
+
+    if (!mounted) return;
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ScanResultScreen(
           passId: code,
+          request: request,
           onRetry: () {
             setState(() => _isScanning = true);
           },

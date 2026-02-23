@@ -1,16 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
+import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/gate_pass_provider.dart';
 import 'apply_pass_screen.dart';
 import 'my_requests_screen.dart';
 
-class StudentDashboard extends StatelessWidget {
+class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
+
+  @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      if (auth.firebaseUser != null) {
+        context.read<GatePassProvider>().listenToStudentRequests(
+          auth.firebaseUser!.uid,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final gatePassProvider = context.watch<GatePassProvider>();
+    final recentRequest = gatePassProvider.studentRequests.isNotEmpty
+        ? gatePassProvider.studentRequests.first
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -30,61 +54,129 @@ class StudentDashboard extends StatelessWidget {
           const SizedBox(width: 16),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Welcome,", style: Theme.of(context).textTheme.bodyLarge),
-            Text(
-              auth.userName ?? "Student",
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 32),
-            _buildActionCard(
-              context,
-              title: "Apply Gate Pass",
-              subtitle: "Request permission to leave campus",
-              icon: Icons.assignment_outlined,
-              color: AppColors.primary,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ApplyPassScreen()),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final auth = context.read<AuthProvider>();
+          if (auth.firebaseUser != null) {
+            context.read<GatePassProvider>().listenToStudentRequests(
+              auth.firebaseUser!.uid,
+            );
+          }
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Welcome,", style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                auth.userName ?? "Student",
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildActionCard(
-              context,
-              title: "My Requests",
-              subtitle: "Check status of your applications",
-              icon: Icons.history_edu_outlined,
-              color: AppColors.secondary,
-              onTap: () => Navigator.push(
+              const SizedBox(height: 32),
+              _buildActionCard(
                 context,
-                MaterialPageRoute(builder: (_) => const MyRequestsScreen()),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              "Recent Activity",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            const Card(
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Color(0xFFE0E7FF),
-                  child: Icon(Icons.check_circle, color: AppColors.success),
+                title: "Apply Gate Pass",
+                subtitle: "Request permission to leave campus",
+                icon: Icons.assignment_outlined,
+                color: AppColors.primary,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ApplyPassScreen()),
                 ),
-                title: Text("Medical Emergency"),
-                subtitle: Text("Approved by HOD"),
-                trailing: Text("2h ago"),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              _buildActionCard(
+                context,
+                title: "My Requests",
+                subtitle: "Check status of your applications",
+                icon: Icons.history_edu_outlined,
+                color: AppColors.secondary,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MyRequestsScreen()),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                "Recent Activity",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              if (recentRequest != null)
+                Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: _getStatusColor(
+                        recentRequest.status,
+                      ).withOpacity(0.1),
+                      child: Icon(
+                        _getStatusIcon(recentRequest.status),
+                        color: _getStatusColor(recentRequest.status),
+                      ),
+                    ),
+                    title: Text(recentRequest.reason),
+                    subtitle: Text(
+                      "Reg No: ${recentRequest.registerNumber ?? 'N/A'} • STATUS: ${recentRequest.status.name.toUpperCase()}",
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MyRequestsScreen(),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Text("No recent requests"),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Color _getStatusColor(GatePassStatus status) {
+    switch (status) {
+      case GatePassStatus.approved:
+        return AppColors.success;
+      case GatePassStatus.rejected:
+        return AppColors.error;
+      case GatePassStatus.pending:
+        return AppColors.warning;
+      case GatePassStatus.expired:
+        return AppColors.textSecondary;
+      case GatePassStatus.exited:
+        return Colors.orange;
+      case GatePassStatus.returned:
+        return Colors.blue;
+    }
+  }
+
+  IconData _getStatusIcon(GatePassStatus status) {
+    switch (status) {
+      case GatePassStatus.approved:
+        return Icons.check_circle;
+      case GatePassStatus.rejected:
+        return Icons.cancel;
+      case GatePassStatus.pending:
+        return Icons.access_time;
+      case GatePassStatus.expired:
+        return Icons.history;
+      case GatePassStatus.exited:
+        return Icons.logout;
+      case GatePassStatus.returned:
+        return Icons.login;
+    }
   }
 
   Widget _buildActionCard(

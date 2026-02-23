@@ -16,8 +16,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _registerNoController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  UserRole _selectedRole = UserRole.student;
-  String _selectedDept = "CSE";
+  UserRole? _selectedRole;
+  String? _selectedDept;
   final List<String> _departments = ["CSE", "ECE", "ME", "CE", "EEE"];
 
   @override
@@ -57,6 +57,42 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     val == null || val.isEmpty ? "Required" : null,
               ),
               const SizedBox(height: 16),
+              DropdownButtonFormField<UserRole>(
+                value: _selectedRole,
+                decoration: const InputDecoration(
+                  labelText: "Designation / Role",
+                  prefixIcon: Icon(Icons.work_outline),
+                ),
+                items: UserRole.values.map((role) {
+                  return DropdownMenuItem(value: role, child: Text(role.label));
+                }).toList(),
+                onChanged: (val) => setState(() {
+                  _selectedRole = val;
+                  // Reset department if role changes to security
+                  if (val == UserRole.security) {
+                    _selectedDept = null;
+                  }
+                }),
+                validator: (val) => val == null ? "Required" : null,
+              ),
+              const SizedBox(height: 16),
+              // Show Department only if role is chose and not Security
+              if (_selectedRole != null && _selectedRole != UserRole.security)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedDept,
+                    decoration: const InputDecoration(
+                      labelText: "Department",
+                      prefixIcon: Icon(Icons.business_outlined),
+                    ),
+                    items: _departments.map((dept) {
+                      return DropdownMenuItem(value: dept, child: Text(dept));
+                    }).toList(),
+                    onChanged: (val) => setState(() => _selectedDept = val),
+                    validator: (val) => val == null ? "Required" : null,
+                  ),
+                ),
               TextFormField(
                 controller: _registerNoController,
                 decoration: const InputDecoration(
@@ -77,30 +113,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 validator: (val) =>
                     val == null || val.isEmpty ? "Required" : null,
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedDept,
-                decoration: const InputDecoration(
-                  labelText: "Department",
-                  prefixIcon: Icon(Icons.business_outlined),
-                ),
-                items: _departments.map((dept) {
-                  return DropdownMenuItem(value: dept, child: Text(dept));
-                }).toList(),
-                onChanged: (val) => setState(() => _selectedDept = val!),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<UserRole>(
-                value: _selectedRole,
-                decoration: const InputDecoration(
-                  labelText: "Designation / Role",
-                  prefixIcon: Icon(Icons.work_outline),
-                ),
-                items: UserRole.values.map((role) {
-                  return DropdownMenuItem(value: role, child: Text(role.label));
-                }).toList(),
-                onChanged: (val) => setState(() => _selectedRole = val!),
-              ),
               const SizedBox(height: 48),
               ElevatedButton(
                 onPressed: authProvider.isLoading
@@ -110,8 +122,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           try {
                             await authProvider.completeProfile(
                               name: _nameController.text,
-                              role: _selectedRole,
-                              department: _selectedDept,
+                              role: _selectedRole!,
+                              department: _selectedDept ?? "Security",
                               registerNumber: _registerNoController.text,
                               phone: _phoneController.text,
                             );

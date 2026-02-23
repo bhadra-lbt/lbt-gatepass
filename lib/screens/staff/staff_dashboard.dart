@@ -5,8 +5,24 @@ import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
 
-class StaffDashboard extends StatelessWidget {
+class StaffDashboard extends StatefulWidget {
   const StaffDashboard({super.key});
+
+  @override
+  State<StaffDashboard> createState() => _StaffDashboardState();
+}
+
+class _StaffDashboardState extends State<StaffDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      context.read<GatePassProvider>().listenToPendingRequests(
+        department: auth.userProfile?['department'],
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,19 +73,34 @@ class StaffDashboard extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: pendingRequests.isEmpty
-                ? const Center(
-                    child: Text("All caught up! No pending requests."),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: pendingRequests.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final request = pendingRequests[index];
-                      return _buildApprovalCard(context, request);
-                    },
-                  ),
+            child: RefreshIndicator(
+              onRefresh: () async {
+                final auth = context.read<AuthProvider>();
+                context.read<GatePassProvider>().listenToPendingRequests(
+                  department: auth.userProfile?['department'],
+                );
+                await Future.delayed(const Duration(seconds: 1));
+              },
+              child: pendingRequests.isEmpty
+                  ? ListView(
+                      children: const [
+                        SizedBox(height: 100),
+                        Center(
+                          child: Text("All caught up! No pending requests."),
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      itemCount: pendingRequests.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final request = pendingRequests[index];
+                        return _buildApprovalCard(context, request);
+                      },
+                    ),
+            ),
           ),
         ],
       ),
@@ -141,7 +172,7 @@ class StaffDashboard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      context.read<GatePassProvider>().updateRequestStatus(
+                      context.read<GatePassProvider>().updateStatus(
                         request.id,
                         GatePassStatus.rejected,
                       );
@@ -158,7 +189,7 @@ class StaffDashboard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<GatePassProvider>().updateRequestStatus(
+                      context.read<GatePassProvider>().updateStatus(
                         request.id,
                         GatePassStatus.approved,
                       );
