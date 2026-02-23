@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "300081168957",
+    "project_id": "lbt-gatepass",
+    "storage_bucket": "lbt-gatepass.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:300081168957:android:a5688e17398aa926052054",
+        "android_client_info": {
+          "package_name": "com.lbt.gatepass"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "300081168957-34ordokgpjtldlnbc8t0q2iaf61bfn23.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEHhPA7pfPVFPtOGUDPsVx6QZG8bKgElI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "300081168957-34ordokgpjtldlnbc8t0q2iaf61bfn23.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
