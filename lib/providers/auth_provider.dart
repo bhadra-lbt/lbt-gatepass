@@ -13,7 +13,7 @@ class AuthProvider extends ChangeNotifier {
   void login(String email, String password, UserRole role) {
     // For demo purposes, we accept any login and set the role based on the selection
     _userRole = role;
-    _userName = role == UserRole.student ? "John Doe" : "Prof. Smith";
+    _userName = role == UserRole.student ? "John Joseph" : "Prof. Smith";
     notifyListeners();
   }
 
