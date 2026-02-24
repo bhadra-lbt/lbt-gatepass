@@ -174,12 +174,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () {
-                      context.read<GatePassProvider>().updateStatus(
-                        request.id,
-                        GatePassStatus.rejected,
-                      );
-                    },
+                    onPressed: () => _showRejectionDialog(context, request.id),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.error,
                       side: const BorderSide(color: AppColors.error),
@@ -208,6 +203,62 @@ class _StaffDashboardState extends State<StaffDashboard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showRejectionDialog(BuildContext context, String requestId) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Reject Request"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Please provide a reason for rejecting this gate pass request.",
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: "Enter rejection reason...",
+                border: OutlineInputBorder(),
+                fillColor: AppColors.background,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Reason is required")),
+                );
+                return;
+              }
+              context.read<GatePassProvider>().updateStatus(
+                requestId,
+                GatePassStatus.rejected,
+                reason: controller.text.trim(),
+              );
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Reject"),
+          ),
+        ],
       ),
     );
   }

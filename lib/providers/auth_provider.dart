@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_role.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -75,12 +76,14 @@ class AuthProvider extends ChangeNotifier {
   Future<void> refreshProfile(String? uid) async {
     if (uid != null) {
       _userProfile = await _authService.getUserProfile(uid);
+      await NotificationService.login(uid);
       notifyListeners();
     }
   }
 
   Future<void> logout() async {
     await _authService.logout();
+    await NotificationService.logout();
     _firebaseUser = null;
     _userProfile = null;
     notifyListeners();

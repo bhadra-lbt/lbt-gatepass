@@ -111,4 +111,33 @@ class DatabaseService {
           return docs;
         });
   }
+
+  // Get UIDs for hierarchical notifications (Section Staff + Parent HOD)
+  Future<List<String>> getDepartmentFacultyIds(String studentDept) async {
+    // Determine parent department (e.g., "CSE 1" -> "CSE")
+    String parentDept = studentDept.split(' ')[0];
+
+    // Fetch all staff and HODs (Small collection, efficient to filter)
+    final snapshot = await _firestore
+        .collection('users')
+        .where('role', whereIn: ['staff', 'hod'])
+        .get();
+
+    return snapshot.docs
+        .where((doc) {
+          final data = doc.data();
+          final role = data['role'];
+          final userDept = data['department'];
+
+          // Condition 1: Staff member in the student's specific section
+          if (role == 'staff' && userDept == studentDept) return true;
+
+          // Condition 2: HOD of the parent department
+          if (role == 'hod' && userDept == parentDept) return true;
+
+          return false;
+        })
+        .map((doc) => doc.id)
+        .toList();
+  }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/gate_pass.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 
 class GatePassProvider extends ChangeNotifier {
   final DatabaseService _dbService = DatabaseService();
@@ -72,6 +73,18 @@ class GatePassProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await _dbService.createGatePassRequest(request);
+
+      // Trigger Notification to HOD/Staff via OneSignal
+      if (request.department != null) {
+        final facultyIds = await _dbService.getDepartmentFacultyIds(
+          request.department!,
+        );
+        await NotificationService.sendNotification(
+          playerIds: facultyIds,
+          title: "New Gate Pass Request",
+          body: "${request.studentName} has submitted a new request.",
+        );
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -84,6 +97,16 @@ class GatePassProvider extends ChangeNotifier {
     String? reason,
   }) async {
     await _dbService.updateRequestStatus(id, status, rejectionReason: reason);
+
+    // Trigger Notification to Student via OneSignal
+    final request = await _dbService.getRequestById(id);
+    if (request != null) {
+      await NotificationService.sendNotification(
+        playerIds: [request.studentId],
+        title: "Gate Pass ${status.name.toUpperCase()}",
+        body: "Your request for ${request.reason} has been ${status.name}.",
+      );
+    }
   }
 
   Future<GatePassRequest?> getRequestById(String id) async {
