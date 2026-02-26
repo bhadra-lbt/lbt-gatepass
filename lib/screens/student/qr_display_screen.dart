@@ -10,11 +10,11 @@ class QRDisplayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Gate Pass QR")),
-      body: SafeArea(
-        top: false,
-        child: Center(
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Gate Pass QR")),
+        body: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(32.0),
             child: Column(

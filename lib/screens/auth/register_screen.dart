@@ -59,8 +59,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (val) {
-                      if (val == null || val.isEmpty)
+                      if (val == null || val.isEmpty) {
                         return "Email is required";
+                      }
                       if (!val.contains("@")) return "Invalid email address";
                       return null;
                     },
@@ -74,10 +75,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     obscureText: true,
                     validator: (val) {
-                      if (val == null || val.isEmpty)
+                      if (val == null || val.isEmpty) {
                         return "Password is required";
-                      if (val.length < 6)
+                      }
+                      if (val.length < 6) {
                         return "Password must be at least 6 characters";
+                      }
                       return null;
                     },
                   ),
@@ -90,8 +93,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     obscureText: true,
                     validator: (val) {
-                      if (val != _passwordController.text)
+                      if (val != _passwordController.text) {
                         return "Passwords do not match";
+                      }
                       return null;
                     },
                   ),

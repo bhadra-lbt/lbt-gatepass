@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_gate_pass/widgets/expandable_text.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
 import 'apply_pass_screen.dart';
 import 'my_requests_screen.dart';
+import '../profile/profile_screen.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -36,27 +39,35 @@ class _StudentDashboardState extends State<StudentDashboard> {
         ? gatePassProvider.studentRequests.first
         : null;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Student Portal"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () => auth.logout(),
-            icon: const Icon(Icons.logout_rounded, color: AppColors.primary),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('asset/playstore.png'),
           ),
-          const SizedBox(width: 8),
-          const CircleAvatar(
-            backgroundColor: AppColors.secondary,
-            child: Icon(Icons.person, color: Colors.white),
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: RefreshIndicator(
+          title: const Text("LBT Smart Pass"),
+          elevation: 0,
+          actions: [
+            IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              ),
+              icon: const Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.primary,
+              ),
+            ),
+            IconButton(
+              onPressed: () => auth.logout(),
+              icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: RefreshIndicator(
           onRefresh: () async {
             final auth = context.read<AuthProvider>();
             if (auth.firebaseUser != null) {
@@ -119,10 +130,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
                           color: _getStatusColor(recentRequest.status),
                         ),
                       ),
-                      title: Text(recentRequest.reason),
+                      title: ExpandableText(
+                        text: recentRequest.reason,
+                        maxLines: 3,
+                        style: GoogleFonts.outfit(),
+                      ),
                       subtitle: Text(
                         "Reg No: ${recentRequest.registerNumber ?? 'N/A'} • STATUS: ${recentRequest.status.name.toUpperCase()}",
-                        style: const TextStyle(fontSize: 12),
+                        style: GoogleFonts.outfit(fontSize: 12),
                       ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => Navigator.push(
@@ -220,9 +235,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
             const SizedBox(height: 24),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+                fontSize: Theme.of(context).textTheme.titleLarge?.fontSize,
               ),
             ),
             const SizedBox(height: 4),

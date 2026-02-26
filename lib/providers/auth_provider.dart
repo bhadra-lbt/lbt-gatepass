@@ -130,4 +130,17 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    if (_firebaseUser == null) return;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.updateUserProfile(_firebaseUser!.uid, data);
+      await refreshProfile(_firebaseUser!.uid);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

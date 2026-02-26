@@ -38,7 +38,7 @@ class SmartGatePassApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart Gate Pass',
+      title: 'LBT Smart Gate Pass',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const RootScreen(),

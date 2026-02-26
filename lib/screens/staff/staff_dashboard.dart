@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
+import '../../widgets/expandable_text.dart';
+import '../profile/profile_screen.dart';
 
 class StaffDashboard extends StatefulWidget {
   const StaffDashboard({super.key});
@@ -30,20 +33,34 @@ class _StaffDashboardState extends State<StaffDashboard> {
     final provider = context.watch<GatePassProvider>();
     final pendingRequests = provider.pendingRequests;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Staff Portal"),
-        actions: [
-          IconButton(
-            onPressed: () => auth.logout(),
-            icon: const Icon(Icons.logout),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('asset/playstore.png'),
           ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: Column(
+          title: const Text("LBT Smart Pass"),
+          actions: [
+            IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              ),
+              icon: const Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.primary,
+              ),
+            ),
+            IconButton(
+              onPressed: () => auth.logout(),
+              icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
@@ -66,7 +83,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
                   const SizedBox(height: 12),
                   Text(
                     "${pendingRequests.length} Pending Approvals",
-                    style: const TextStyle(
+                    style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -125,23 +142,23 @@ class _StaffDashboardState extends State<StaffDashboard> {
                   children: [
                     Text(
                       request.studentName,
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      "ID: ${request.studentId} • S${request.semester ?? '?'} ${request.department ?? 'N/A'}",
-                      style: const TextStyle(
+                      "Reg. No: ${request.registerNumber}\nS${request.semester ?? '?'} ${request.department ?? 'N/A'}",
+                      style: GoogleFonts.outfit(
                         color: AppColors.textSecondary,
-                        fontSize: 13,
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
                 Text(
                   request.id,
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
@@ -149,14 +166,17 @@ class _StaffDashboardState extends State<StaffDashboard> {
               ],
             ),
             const Divider(height: 32),
-            const Text(
+            Text(
               "Reason:",
-              style: TextStyle(
+              style: GoogleFonts.outfit(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            Text(request.reason, style: const TextStyle(fontSize: 16)),
+            ExpandableText(
+              text: request.reason,
+              style: GoogleFonts.outfit(fontSize: 16),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [

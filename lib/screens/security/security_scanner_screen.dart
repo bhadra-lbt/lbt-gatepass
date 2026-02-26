@@ -17,65 +17,68 @@ class _SecurityScannerScreenState extends State<SecurityScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Gate Security Scan"),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Gate Security Scan"),
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+        ),
         backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        top: false,
-        child: Stack(
-          children: [
-            MobileScanner(
-              onDetect: (capture) {
-                if (!_isScanning) return;
+        body: SafeArea(
+          top: false,
+          child: Stack(
+            children: [
+              MobileScanner(
+                onDetect: (capture) {
+                  if (!_isScanning) return;
 
-                final List<Barcode> barcodes = capture.barcodes;
-                for (final barcode in barcodes) {
-                  if (barcode.rawValue != null) {
-                    setState(() => _isScanning = false);
-                    _handleScan(barcode.rawValue!);
-                    break;
+                  final List<Barcode> barcodes = capture.barcodes;
+                  for (final barcode in barcodes) {
+                    if (barcode.rawValue != null) {
+                      setState(() => _isScanning = false);
+                      _handleScan(barcode.rawValue!);
+                      break;
+                    }
                   }
-                }
-              },
-            ),
-            // Custom Overlay
-            Center(
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.secondary, width: 4),
-                  borderRadius: BorderRadius.circular(24),
+                },
+              ),
+              // Custom Overlay
+              Center(
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.secondary, width: 4),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 80,
-              left: 0,
-              right: 0,
-              child: Column(
-                children: [
-                  const Text(
-                    "Align QR Code within the frame",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white24,
-                      minimumSize: const Size(200, 50),
+              Positioned(
+                bottom: 80,
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+                    const Text(
+                      "Align QR Code within the frame",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    child: const Text("Exit Scanner"),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white24,
+                        minimumSize: const Size(200, 50),
+                      ),
+                      child: const Text("Exit Scanner"),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

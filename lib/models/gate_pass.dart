@@ -36,8 +36,9 @@ class GatePassRequest {
   });
 
   bool get isExpired {
-    if (status == GatePassStatus.returned || status == GatePassStatus.rejected)
+    if (status == GatePassStatus.returned || status == GatePassStatus.rejected) {
       return false;
+    }
 
     try {
       final now = DateTime.now();

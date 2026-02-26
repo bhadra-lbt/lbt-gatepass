@@ -88,11 +88,11 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
     final auth = context.watch<AuthProvider>();
     final gatePassProvider = context.watch<GatePassProvider>();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Apply Gate Pass")),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Apply Gate Pass")),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

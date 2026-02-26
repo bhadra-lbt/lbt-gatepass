@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
+import '../../widgets/expandable_text.dart';
+import '../profile/profile_screen.dart';
 
 class HODDashboard extends StatefulWidget {
   const HODDashboard({super.key});
@@ -43,14 +46,27 @@ class _HODDashboardState extends State<HODDashboard> {
       top: false,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("HOD Portal"),
-
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('asset/playstore.png'),
+          ),
+          title: const Text("LBT Smart Pass"),
           actions: [
             IconButton(
-              onPressed: () => auth.logout(),
-              icon: const Icon(Icons.logout),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              ),
+              icon: const Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.primary,
+              ),
             ),
-            const SizedBox(width: 16),
+            IconButton(
+              onPressed: () => auth.logout(),
+              icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            ),
+            const SizedBox(width: 8),
           ],
         ),
         body: SafeArea(
@@ -99,7 +115,7 @@ class _HODDashboardState extends State<HODDashboard> {
                           ),
                           child: Text(
                             _hodDept ?? "Unknown",
-                            style: const TextStyle(
+                            style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
@@ -110,7 +126,7 @@ class _HODDashboardState extends State<HODDashboard> {
                     const SizedBox(height: 24),
                     Text(
                       "${pendingRequests.length} Pending Approvals",
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -178,8 +194,8 @@ class _HODDashboardState extends State<HODDashboard> {
                         ),
                       ),
                       Text(
-                        "ID: ${request.studentId} • S${request.semester ?? '?'} ${request.department ?? 'N/A'}",
-                        style: const TextStyle(
+                        "Reg. No: ${request.registerNumber}\nS${request.semester ?? '?'} ${request.department ?? 'N/A'}",
+                        style: GoogleFonts.roboto(
                           color: AppColors.textSecondary,
                           fontSize: 12,
                         ),
@@ -189,7 +205,7 @@ class _HODDashboardState extends State<HODDashboard> {
                 ),
                 Text(
                   request.id,
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
@@ -200,16 +216,19 @@ class _HODDashboardState extends State<HODDashboard> {
               padding: EdgeInsets.symmetric(vertical: 16),
               child: Divider(),
             ),
-            const Text(
+            Text(
               "Requested Reason:",
-              style: TextStyle(
+              style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
                 color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
-            Text(request.reason, style: const TextStyle(fontSize: 15)),
+            ExpandableText(
+              text: request.reason,
+              style: GoogleFonts.outfit(fontSize: 15),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -217,7 +236,7 @@ class _HODDashboardState extends State<HODDashboard> {
                 const SizedBox(width: 8),
                 Text(
                   "${request.fromTime} to ${request.toTime}",
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w500),
                 ),
               ],
             ),

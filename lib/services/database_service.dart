@@ -53,7 +53,7 @@ class DatabaseService {
   }) async {
     await _gatePasses.doc(id).update({
       'status': status.name,
-      if (rejectionReason != null) 'rejectionReason': rejectionReason,
+      'rejectionReason': ?rejectionReason,
     });
   }
 

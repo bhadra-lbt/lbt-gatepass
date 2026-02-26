@@ -6,6 +6,7 @@ import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
 import 'security_scanner_screen.dart';
+import '../profile/profile_screen.dart';
 
 class SecurityDashboard extends StatefulWidget {
   const SecurityDashboard({super.key});
@@ -39,20 +40,34 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
           time.year == now.year;
     }).toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Security Portal"),
-        actions: [
-          IconButton(
-            onPressed: () => auth.logout(),
-            icon: const Icon(Icons.logout),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('asset/playstore.png'),
           ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: RefreshIndicator(
+          title: const Text("LBT Smart Pass"),
+          actions: [
+            IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              ),
+              icon: const Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.primary,
+              ),
+            ),
+            IconButton(
+              onPressed: () => auth.logout(),
+              icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: RefreshIndicator(
           onRefresh: () async {
             context.read<GatePassProvider>().listenToRecentActivity();
             await Future.delayed(const Duration(seconds: 1));

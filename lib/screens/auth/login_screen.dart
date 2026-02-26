@@ -30,16 +30,15 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(
-                  Icons.admin_panel_settings_rounded,
-                  size: 80,
-                  color: AppColors.primary,
-                ),
+                Center(child: Image.asset('asset/playstore.png', height: 100)),
                 const SizedBox(height: 24),
                 Text(
-                  "Smart Gate Pass",
+                  "LBT Smart Pass",
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(

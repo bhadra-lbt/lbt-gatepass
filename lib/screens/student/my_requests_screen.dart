@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
 import 'qr_display_screen.dart';
+import '../../widgets/expandable_text.dart';
 
 class MyRequestsScreen extends StatelessWidget {
   const MyRequestsScreen({super.key});
@@ -15,11 +17,11 @@ class MyRequestsScreen extends StatelessWidget {
     final provider = context.watch<GatePassProvider>();
     final requests = provider.studentRequests;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("My Requests")),
-      body: SafeArea(
-        top: false,
-        child: RefreshIndicator(
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(title: const Text("My Requests")),
+        body: RefreshIndicator(
           onRefresh: () async {
             final auth = context.read<AuthProvider>();
             if (auth.firebaseUser != null) {
@@ -68,7 +70,7 @@ class MyRequestsScreen extends StatelessWidget {
               children: [
                 Text(
                   request.id,
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
@@ -77,9 +79,9 @@ class MyRequestsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              request.reason,
-              style: const TextStyle(
+            ExpandableText(
+              text: request.reason,
+              style: GoogleFonts.outfit(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -88,7 +90,7 @@ class MyRequestsScreen extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               "Register Number: ${request.registerNumber ?? 'Not provided'}",
-              style: const TextStyle(
+              style: GoogleFonts.outfit(
                 fontSize: 13,
                 color: AppColors.textSecondary,
               ),
@@ -140,7 +142,7 @@ class MyRequestsScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 "Reason: ${request.rejectionReason ?? 'Standard policy'}",
-                style: const TextStyle(color: AppColors.error, fontSize: 13),
+                style: GoogleFonts.outfit(color: AppColors.error, fontSize: 13),
               ),
             ],
           ],
@@ -189,7 +191,7 @@ class MyRequestsScreen extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: GoogleFonts.outfit(
           color: color,
           fontSize: 12,
           fontWeight: FontWeight.bold,

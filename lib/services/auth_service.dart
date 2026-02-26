@@ -60,6 +60,11 @@ class AuthService {
     });
   }
 
+  // Update user profile fields
+  Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
+    await _firestore.collection('users').doc(uid).update(data);
+  }
+
   // Send Password Reset Email
   Future<void> sendPasswordResetEmail(String email) async {
     await _auth.sendPasswordResetEmail(email: email);

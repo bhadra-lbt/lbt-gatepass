@@ -17,6 +17,20 @@ class NotificationService {
 
     // Request permissions
     OneSignal.Notifications.requestPermission(true);
+
+    // IMPORTANT: This listener handles how notifications behave when the app is OPEN
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      log("Notification arrived in foreground: ${event.notification.title}");
+
+      // Keep "displayNotification" called to ensure the banner shows up
+      // even if the user is actively using the app.
+      event.notification.display();
+    });
+
+    // Listener for when a notification is clicked
+    OneSignal.Notifications.addClickListener((event) {
+      log("Notification clicked: ${event.notification.title}");
+    });
   }
 
   static Future<void> login(String uid) async {

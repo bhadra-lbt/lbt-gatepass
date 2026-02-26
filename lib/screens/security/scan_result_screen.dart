@@ -244,7 +244,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   ),
                 ),
               const Spacer(),
-              if (actionButton != null) actionButton,
+              ?actionButton,
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () {
