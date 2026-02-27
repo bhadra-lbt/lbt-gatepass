@@ -9,45 +9,200 @@ import '../../providers/gate_pass_provider.dart';
 import 'qr_display_screen.dart';
 import '../../widgets/expandable_text.dart';
 
-class MyRequestsScreen extends StatelessWidget {
+class MyRequestsScreen extends StatefulWidget {
   const MyRequestsScreen({super.key});
+
+  @override
+  State<MyRequestsScreen> createState() => _MyRequestsScreenState();
+}
+
+class _MyRequestsScreenState extends State<MyRequestsScreen> {
+  DateTime? _selectedDate;
+  GatePassStatus? _selectedStatus;
+  final TextEditingController _searchController = TextEditingController();
+
+  void _onRefresh(BuildContext context) {
+    final auth = context.read<AuthProvider>();
+    if (auth.firebaseUser != null) {
+      context.read<GatePassProvider>().listenToStudentRequests(
+        auth.firebaseUser!.uid,
+        date: _selectedDate,
+        status: _selectedStatus,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<GatePassProvider>();
-    final requests = provider.studentRequests;
+    var requests = provider.studentRequests;
+
+    // Local Search Filter
+    if (_searchController.text.isNotEmpty) {
+      final query = _searchController.text.toLowerCase();
+      requests = requests.where((req) {
+        return req.id.toLowerCase().contains(query) ||
+            req.reason.toLowerCase().contains(query);
+      }).toList();
+    }
 
     return SafeArea(
       top: false,
       child: Scaffold(
-        appBar: AppBar(title: const Text("My Requests")),
+        appBar: AppBar(
+          title: const Text("My Requests"),
+          actions: [
+            IconButton(
+              onPressed: () async {
+                final date = await showDatePicker(
+                  context: context,
+
+                  initialDate: _selectedDate ?? DateTime.now(),
+                  firstDate: DateTime(DateTime.now().year, 1, 1),
+                  lastDate: DateTime.now(),
+                );
+                if (date != null) {
+                  setState(() => _selectedDate = date);
+                  _onRefresh(context);
+                }
+              },
+              icon: Icon(
+                _selectedDate == null
+                    ? Icons.calendar_month_outlined
+                    : Icons.calendar_month,
+                color: _selectedDate == null ? null : AppColors.primary,
+              ),
+            ),
+            if (_selectedDate != null ||
+                _selectedStatus != null ||
+                _searchController.text.isNotEmpty)
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = null;
+                    _selectedStatus = null;
+                    _searchController.clear();
+                  });
+                  _onRefresh(context);
+                },
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  color: AppColors.primary,
+                ),
+              ),
+          ],
+        ),
         body: RefreshIndicator(
           onRefresh: () async {
-            final auth = context.read<AuthProvider>();
-            if (auth.firebaseUser != null) {
-              context.read<GatePassProvider>().listenToStudentRequests(
-                auth.firebaseUser!.uid,
-              );
-            }
+            _onRefresh(context);
             await Future.delayed(const Duration(seconds: 1));
           },
-          child: requests.isEmpty
-              ? ListView(
-                  children: const [
-                    SizedBox(height: 100),
-                    Center(child: Text("No requests found")),
-                  ],
-                )
-              : ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(20),
-                  itemCount: requests.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final request = requests[index];
-                    return _buildRequestCard(context, request);
-                  },
+          child: Column(
+            children: [
+              // 1. Search Bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: "Search by ID or Reason...",
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  onChanged: (val) => setState(() {}),
                 ),
+              ),
+              _buildFilterBar(),
+              if (_selectedDate != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  color: AppColors.primary.withOpacity(0.1),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_month,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Showing requests for: ${DateFormat('dd MMM yyyy').format(_selectedDate!)}",
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: requests.isEmpty
+                    ? ListView(
+                        children: const [
+                          SizedBox(height: 100),
+                          Center(child: Text("No matching requests found")),
+                        ],
+                      )
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(20),
+                        itemCount: requests.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final request = requests[index];
+                          return _buildRequestCard(context, request);
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterBar() {
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          _buildFilterChip(null, "All"),
+          ...GatePassStatus.values.map(
+            (status) => _buildFilterChip(status, status.name.toUpperCase()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(GatePassStatus? status, String label) {
+    final isSelected = _selectedStatus == status;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (selected) {
+          if (selected) {
+            setState(() => _selectedStatus = status);
+            _onRefresh(context);
+          }
+        },
+        selectedColor: AppColors.primary,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : AppColors.textPrimary,
+          fontSize: 12,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
     );
@@ -75,7 +230,43 @@ class MyRequestsScreen extends StatelessWidget {
                     color: AppColors.primary,
                   ),
                 ),
-                _buildStatusChip(request.status),
+                Row(
+                  children: [
+                    if (request.status == GatePassStatus.exited &&
+                        request.warningNotificationId != null)
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.notifications_active_outlined,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "Tracking ON",
+                              style: GoogleFonts.outfit(
+                                fontSize: 10,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    _buildStatusChip(request.status),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 16),

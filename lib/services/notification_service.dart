@@ -51,12 +51,14 @@ class NotificationService {
   }
 
   // Send a notification to specific user IDs (External User IDs)
-  static Future<void> sendNotification({
+  // Now returns the notification ID for potential cancellation
+  static Future<String?> sendNotification({
     required List<String> playerIds, // These correspond to external UIDs
     required String title,
     required String body,
+    DateTime? sendAfter, // NEW: For scheduling
   }) async {
-    if (playerIds.isEmpty) return;
+    if (playerIds.isEmpty) return null;
 
     try {
       final response = await http.post(
@@ -70,16 +72,42 @@ class NotificationService {
           'include_external_user_ids': playerIds,
           'headings': {'en': title},
           'contents': {'en': body},
+          if (sendAfter != null)
+            'send_after': sendAfter.toUtc().toIso8601String(),
         }),
       );
 
       if (response.statusCode == 200) {
-        log("OneSignal notification sent successfully");
+        final data = jsonDecode(response.body);
+        log("OneSignal notification sent successfully: ${data['id']}");
+        return data['id'];
       } else {
         log("Error sending OneSignal notification: ${response.body}");
+        return null;
       }
     } catch (e) {
       log("Exception sending OneSignal notification: $e");
+      return null;
+    }
+  }
+
+  // NEW: Cancel a scheduled notification
+  static Future<void> cancelNotification(String notificationId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(
+          'https://onesignal.com/api/v1/notifications/$notificationId?app_id=$appId',
+        ),
+        headers: {'Authorization': 'Basic $restApiKey'},
+      );
+
+      if (response.statusCode == 200) {
+        log("OneSignal notification cancelled: $notificationId");
+      } else {
+        log("Error cancelling OneSignal notification: ${response.body}");
+      }
+    } catch (e) {
+      log("Exception cancelling OneSignal notification: $e");
     }
   }
 }

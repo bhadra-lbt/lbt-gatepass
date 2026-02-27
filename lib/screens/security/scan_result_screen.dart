@@ -73,8 +73,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
     final req = widget.request!;
 
-    // 1. Check Expiry
-    if (req.isExpired && req.status != GatePassStatus.returned) {
+    // 1. Check Expiry (But allow return if they are already outside)
+    if (req.isExpired &&
+        req.status != GatePassStatus.returned &&
+        req.status != GatePassStatus.exited) {
       return _buildResultView(
         backgroundColor: AppColors.error,
         icon: Icons.timer_off_outlined,
@@ -97,13 +99,19 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         );
 
       case GatePassStatus.exited:
+        final bool isLate = req.isExpired;
         return _buildResultView(
-          backgroundColor: Colors.orange,
+          backgroundColor: isLate ? AppColors.error : Colors.orange,
           icon: Icons.input_rounded,
-          status: "STUDENT OUTSIDE",
-          message: "Student is currently outside campus. Record return?",
+          status: isLate ? "OVERDUE / OUTSIDE" : "STUDENT OUTSIDE",
+          message: isLate
+              ? "Student is OVERDUE but still outside. Record late return?"
+              : "Student is currently outside campus. Record return?",
           showDetails: true,
-          actionButton: _buildActionButton("Confirm RETURN", false),
+          actionButton: _buildActionButton(
+            isLate ? "Confirm LATE RETURN" : "Confirm RETURN",
+            false,
+          ),
         );
 
       case GatePassStatus.returned:

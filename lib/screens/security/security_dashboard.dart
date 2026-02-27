@@ -6,6 +6,7 @@ import '../../models/gate_pass.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/gate_pass_provider.dart';
 import 'security_scanner_screen.dart';
+import 'security_history_screen.dart';
 import '../profile/profile_screen.dart';
 
 class SecurityDashboard extends StatefulWidget {
@@ -16,6 +17,8 @@ class SecurityDashboard extends StatefulWidget {
 }
 
 class _SecurityDashboardState extends State<SecurityDashboard> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -28,11 +31,20 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final provider = context.watch<GatePassProvider>();
-    final recentActivity = provider.recentActivity;
+    var recentActivity = provider.recentActivity;
+
+    // Local Search Filter
+    if (_searchController.text.isNotEmpty) {
+      final query = _searchController.text.toLowerCase();
+      recentActivity = recentActivity.where((a) {
+        return a.studentName.toLowerCase().contains(query) ||
+            a.id.toLowerCase().contains(query);
+      }).toList();
+    }
 
     // Filter today's stats from recentActivity
     final now = DateTime.now();
-    final todayActivity = recentActivity.where((a) {
+    final todayActivity = provider.recentActivity.where((a) {
       final time = a.returnDateTime ?? a.exitDateTime;
       return time != null &&
           time.day == now.day &&
@@ -79,7 +91,32 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(context),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                // 1. Quick Search Bar
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: "Quick Search Name / ID...",
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 20),
+                            onPressed: () {
+                              setState(() => _searchController.clear());
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    fillColor: Colors.grey[100],
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  onChanged: (val) => setState(() {}),
+                ),
+                const SizedBox(height: 16),
                 _buildScannerButton(context),
                 const SizedBox(height: 24),
                 _buildStatsRow(
@@ -87,9 +124,26 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
                   todayActivity.length.toString(),
                 ), // Simplified authorized count
                 const SizedBox(height: 32),
-                const Text(
-                  "Recent Gate Activity",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Gate Activity",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SecurityHistoryScreen(),
+                        ),
+                      ),
+                      child: const Text("View All"),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 if (recentActivity.isEmpty)
@@ -97,7 +151,7 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Text(
-                        "No recent activity recorded",
+                        "No activity found",
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                     ),
@@ -106,7 +160,7 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: recentActivity.take(10).length,
+                    itemCount: recentActivity.take(15).length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final activity = recentActivity[index];
@@ -173,20 +227,32 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
     return Row(
       children: [
         Expanded(
-          child: _buildStatCard(
-            "Checked Today",
-            checked,
-            Icons.people_outline,
-            AppColors.primary,
+          child: InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SecurityHistoryScreen()),
+            ),
+            child: _buildStatCard(
+              "Checked Today",
+              checked,
+              Icons.people_outline,
+              AppColors.primary,
+            ),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildStatCard(
-            "Authorized",
-            authorized,
-            Icons.check_circle_outline,
-            AppColors.success,
+          child: InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SecurityHistoryScreen()),
+            ),
+            child: _buildStatCard(
+              "Authorized",
+              authorized,
+              Icons.check_circle_outline,
+              AppColors.success,
+            ),
           ),
         ),
       ],

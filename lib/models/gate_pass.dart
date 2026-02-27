@@ -17,6 +17,9 @@ class GatePassRequest {
   final String? semester; // Added semester
   final DateTime? exitDateTime;
   final DateTime? returnDateTime;
+  final String? warningNotificationId;
+  final String? overdueStudentNotificationId;
+  final String? overdueFacultyNotificationId;
 
   GatePassRequest({
     required this.id,
@@ -33,15 +36,13 @@ class GatePassRequest {
     this.semester,
     this.exitDateTime,
     this.returnDateTime,
+    this.warningNotificationId,
+    this.overdueStudentNotificationId,
+    this.overdueFacultyNotificationId,
   });
 
-  bool get isExpired {
-    if (status == GatePassStatus.returned || status == GatePassStatus.rejected) {
-      return false;
-    }
-
+  DateTime? get expiryDateTime {
     try {
-      final now = DateTime.now();
       final toTimeParts = toTime.split(' ');
       final timeParts = toTimeParts[0].split(':');
       int hour = int.parse(timeParts[0]);
@@ -50,18 +51,20 @@ class GatePassRequest {
       if (toTimeParts[1].toUpperCase() == 'PM' && hour < 12) hour += 12;
       if (toTimeParts[1].toUpperCase() == 'AM' && hour == 12) hour = 0;
 
-      final expiryDateTime = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        hour,
-        minute,
-      );
-
-      return now.isAfter(expiryDateTime);
+      return DateTime(date.year, date.month, date.day, hour, minute);
     } catch (_) {
+      return null;
+    }
+  }
+
+  bool get isExpired {
+    if (status == GatePassStatus.returned ||
+        status == GatePassStatus.rejected) {
       return false;
     }
+    final expiry = expiryDateTime;
+    if (expiry == null) return false;
+    return DateTime.now().isAfter(expiry);
   }
 
   GatePassRequest copyWith({
@@ -69,6 +72,9 @@ class GatePassRequest {
     String? rejectionReason,
     DateTime? exitDateTime,
     DateTime? returnDateTime,
+    String? warningNotificationId,
+    String? overdueStudentNotificationId,
+    String? overdueFacultyNotificationId,
   }) {
     return GatePassRequest(
       id: id,
@@ -85,6 +91,12 @@ class GatePassRequest {
       semester: semester,
       exitDateTime: exitDateTime ?? this.exitDateTime,
       returnDateTime: returnDateTime ?? this.returnDateTime,
+      warningNotificationId:
+          warningNotificationId ?? this.warningNotificationId,
+      overdueStudentNotificationId:
+          overdueStudentNotificationId ?? this.overdueStudentNotificationId,
+      overdueFacultyNotificationId:
+          overdueFacultyNotificationId ?? this.overdueFacultyNotificationId,
     );
   }
 
@@ -108,6 +120,12 @@ class GatePassRequest {
       'returnDateTime': returnDateTime != null
           ? Timestamp.fromDate(returnDateTime!)
           : null,
+      'expiryDateTime': expiryDateTime != null
+          ? Timestamp.fromDate(expiryDateTime!)
+          : null,
+      'warningNotificationId': warningNotificationId,
+      'overdueStudentNotificationId': overdueStudentNotificationId,
+      'overdueFacultyNotificationId': overdueFacultyNotificationId,
     };
   }
 
@@ -134,6 +152,9 @@ class GatePassRequest {
       returnDateTime: map['returnDateTime'] != null
           ? (map['returnDateTime'] as Timestamp).toDate()
           : null,
+      warningNotificationId: map['warningNotificationId'],
+      overdueStudentNotificationId: map['overdueStudentNotificationId'],
+      overdueFacultyNotificationId: map['overdueFacultyNotificationId'],
     );
   }
 }

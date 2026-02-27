@@ -12,15 +12,104 @@ class DatabaseService {
     await _gatePasses.doc(request.id).set(request.toMap());
   }
 
-  // Get all requests for a specific student
-  Stream<List<GatePassRequest>> getStudentRequests(String studentId) {
-    return _gatePasses.where('studentId', isEqualTo: studentId).snapshots().map(
-      (snapshot) {
-        return snapshot.docs.map((doc) {
-          return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
-        }).toList();
-      },
+  // Get all requests for a specific student (with optional date and status filters)
+  Stream<List<GatePassRequest>> getStudentRequests(
+    String studentId, {
+    DateTime? date,
+    GatePassStatus? status,
+  }) {
+    Query query = _gatePasses.where('studentId', isEqualTo: studentId);
+
+    if (status != null) {
+      query = query.where('status', isEqualTo: status.name);
+    }
+
+    if (date != null) {
+      final start = DateTime(date.year, date.month, date.day);
+      final end = start.add(const Duration(days: 1));
+      query = query
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+          .where('date', isLessThan: Timestamp.fromDate(end));
+    }
+
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+    });
+  }
+
+  // Get overdue requests (Exited but past expiry time)
+  Stream<List<GatePassRequest>> getOverdueRequests({String? department}) {
+    Query query = _gatePasses.where(
+      'status',
+      isEqualTo: GatePassStatus.exited.name,
     );
+
+    if (department != null && department != "All") {
+      if (department == "CSE") {
+        query = query.where('department', whereIn: ['CSE 1', 'CSE 2']);
+      } else {
+        query = query.where('department', isEqualTo: department);
+      }
+    }
+
+    return query.snapshots().map((snapshot) {
+      final now = DateTime.now();
+      return snapshot.docs
+          .map((doc) {
+            return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+          })
+          .where((req) {
+            final expiry = req.expiryDateTime;
+            return expiry != null && now.isAfter(expiry);
+          })
+          .toList();
+    });
+  }
+
+  // Comprehensive query for all gate passes (for Security/Admins/Faculty History)
+  Stream<List<GatePassRequest>> getFilteredGatePasses({
+    String? department,
+    GatePassStatus? status,
+    DateTime? date,
+    String? semester,
+  }) {
+    Query query = _gatePasses;
+
+    if (department != null && department != "All") {
+      if (department == "CSE") {
+        query = query.where('department', whereIn: ['CSE 1', 'CSE 2']);
+      } else {
+        query = query.where('department', isEqualTo: department);
+      }
+    }
+
+    if (status != null) {
+      query = query.where('status', isEqualTo: status.name);
+    }
+
+    if (semester != null && semester != "All") {
+      query = query.where('semester', isEqualTo: semester);
+    }
+
+    if (date != null) {
+      final start = DateTime(date.year, date.month, date.day);
+      final end = start.add(const Duration(days: 1));
+      query = query
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+          .where('date', isLessThan: Timestamp.fromDate(end));
+    }
+
+    return query.snapshots().map((snapshot) {
+      final docs = snapshot.docs.map((doc) {
+        return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      // Sort by date descending
+      docs.sort((a, b) => b.date.compareTo(a.date));
+      return docs;
+    });
   }
 
   // Get all pending requests for staff/HOD
@@ -57,11 +146,21 @@ class DatabaseService {
     });
   }
 
-  // Record student exit
-  Future<void> logExit(String id) async {
+  // Record student exit with notification tracking
+  Future<void> logExit(
+    String id, {
+    String? warningId,
+    String? overdueStudentId,
+    String? overdueFacultyId,
+  }) async {
     await _gatePasses.doc(id).update({
       'status': GatePassStatus.exited.name,
       'exitDateTime': FieldValue.serverTimestamp(),
+      if (warningId != null) 'warningNotificationId': warningId,
+      if (overdueStudentId != null)
+        'overdueStudentNotificationId': overdueStudentId,
+      if (overdueFacultyId != null)
+        'overdueFacultyNotificationId': overdueFacultyId,
     });
   }
 
