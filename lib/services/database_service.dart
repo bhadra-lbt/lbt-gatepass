@@ -156,11 +156,9 @@ class DatabaseService {
     await _gatePasses.doc(id).update({
       'status': GatePassStatus.exited.name,
       'exitDateTime': FieldValue.serverTimestamp(),
-      if (warningId != null) 'warningNotificationId': warningId,
-      if (overdueStudentId != null)
-        'overdueStudentNotificationId': overdueStudentId,
-      if (overdueFacultyId != null)
-        'overdueFacultyNotificationId': overdueFacultyId,
+      'warningNotificationId': ?warningId,
+      'overdueStudentNotificationId': ?overdueStudentId,
+      'overdueFacultyNotificationId': ?overdueFacultyId,
     });
   }
 
