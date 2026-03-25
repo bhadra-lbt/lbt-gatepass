@@ -172,8 +172,18 @@ class GatePassProvider extends ChangeNotifier {
     String id,
     GatePassStatus status, {
     String? reason,
+    String? approvedByName,
+    String? approvedByPhone,
+    String? approvedByRole,
   }) async {
-    await _dbService.updateRequestStatus(id, status, rejectionReason: reason);
+    await _dbService.updateRequestStatus(
+      id,
+      status,
+      rejectionReason: reason,
+      approvedByName: approvedByName,
+      approvedByPhone: approvedByPhone,
+      approvedByRole: approvedByRole,
+    );
 
     // Trigger Notification to Student via OneSignal
     final request = await _dbService.getRequestById(id);
@@ -184,6 +194,12 @@ class GatePassProvider extends ChangeNotifier {
         body: "Your request for ${request.reason} has been ${status.name}.",
       );
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getDepartmentStaffMembers(
+    String department,
+  ) async {
+    return await _dbService.getDepartmentStaffMembers(department);
   }
 
   Future<GatePassRequest?> getRequestById(String id) async {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
 import '../../providers/gate_pass_provider.dart';
@@ -23,6 +25,17 @@ class ScanResultScreen extends StatefulWidget {
 
 class _ScanResultScreenState extends State<ScanResultScreen> {
   bool _isProcessing = false;
+  Future<List<Map<String, dynamic>>>? _staffFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.request != null) {
+      _staffFuture = context.read<GatePassProvider>().getDepartmentStaffMembers(
+        widget.request!.department ?? '',
+      );
+    }
+  }
 
   Future<void> _handleAction(bool isExit) async {
     if (widget.request == null) return;
@@ -167,7 +180,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             ? const CircularProgressIndicator()
             : Text(
                 label,
-                style: const TextStyle(
+                style: GoogleFonts.outfit(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -187,18 +200,18 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
+        child: SingleChildScrollView(
+          scrollDirection: .vertical,
+          padding: .symmetric(horizontal: 20, vertical: 12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(),
+              const SizedBox(height: 24),
               Icon(icon, size: 100, color: Colors.white),
               const SizedBox(height: 24),
               Text(
                 status,
-                style: const TextStyle(
+                style: GoogleFonts.outfit(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -208,7 +221,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18, color: Colors.white70),
+                style: GoogleFonts.outfit(fontSize: 18, color: Colors.white70),
               ),
               const SizedBox(height: 48),
               if (showDetails && widget.request != null)
@@ -248,11 +261,100 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                             'hh:mm a',
                           ).format(widget.request!.returnDateTime!),
                         ),
+                      if (widget.request!.approvedByName != null)
+                        _buildResultRow(
+                          "Approved by",
+                          "${widget.request!.approvedByName!} (${widget.request!.approvedByRole?.toUpperCase() ?? 'APPROVER'})",
+                        ),
+                      const Divider(color: Colors.white24, height: 32),
+                      const Text(
+                        "FACULTY CONTACTS",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      FutureBuilder<List<Map<String, dynamic>>>(
+                        future: _staffFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            );
+                          }
+                          final staffList = snapshot.data ?? [];
+                          if (staffList.isEmpty) {
+                            return const Text(
+                              "No staff advisors found for this department.",
+                              style: TextStyle(
+                                color: Colors.white60,
+                                fontSize: 12,
+                              ),
+                            );
+                          }
+                          return Column(
+                            children: staffList.map((staff) {
+                              final name = staff['name'] ?? 'Staff';
+                              final phone = staff['phone'];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  dense: true,
+                                  title: Text(
+                                    name,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    phone ?? "No phone",
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  trailing: phone != null
+                                      ? IconButton(
+                                          onPressed: () async {
+                                            final uri = Uri.parse("tel:$phone");
+                                            if (await canLaunchUrl(uri)) {
+                                              await launchUrl(uri);
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.call,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                          style: IconButton.styleFrom(
+                                            backgroundColor: Colors.white
+                                                .withValues(alpha: 0.2),
+                                            padding: const EdgeInsets.all(8),
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
-              const Spacer(),
-              ?actionButton,
+              const SizedBox(height: 8),
+              if (actionButton != null) actionButton,
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () {
@@ -281,14 +383,14 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,

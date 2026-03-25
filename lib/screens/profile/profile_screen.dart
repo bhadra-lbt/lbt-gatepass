@@ -212,6 +212,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               label: "Semester",
                               icon: Icons.grid_view_rounded,
                               enabled: _isEditing,
+                              isRequired: profile['role'] == 'student'
+                                  ? true
+                                  : false,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -271,56 +274,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String label,
     required IconData icon,
     bool enabled = true,
+    bool isRequired = true,
     TextInputType? keyboardType,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        enabled: enabled,
-        keyboardType: keyboardType,
-        style: GoogleFonts.outfit(fontSize: 16, color: AppColors.textPrimary),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: GoogleFonts.outfit(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-          ),
-          prefixIcon: Icon(
-            icon,
-            color: AppColors.primary.withValues(alpha: 0.7),
-            size: 20,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: enabled
-              ? Colors.white
-              : Colors.grey.withValues(alpha: 0.05),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
+    return TextFormField(
+      controller: controller,
+      enabled: enabled,
+      keyboardType: keyboardType,
+      style: GoogleFonts.outfit(fontSize: 16, color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.outfit(
+          color: AppColors.textSecondary,
+          fontSize: 14,
         ),
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return "This field is required";
-          }
-          return null;
-        },
+        prefixIcon: Icon(
+          icon,
+          color: AppColors.primary.withValues(alpha: 0.7),
+          size: 20,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
       ),
+      validator: isRequired
+          ? (value) {
+              if (value == null || value.trim().isEmpty) {
+                return "Required";
+              }
+              if (keyboardType == TextInputType.phone &&
+                  !RegExp(r'^\d{10}$').hasMatch(value.trim())) {
+                return "Enter a valid 10-digit number";
+              }
+              return null;
+            }
+          : null,
     );
   }
 }

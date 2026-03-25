@@ -16,6 +16,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -58,22 +60,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       prefixIcon: Icon(Icons.email_outlined),
                     ),
                     keyboardType: TextInputType.emailAddress,
+
                     validator: (val) {
                       if (val == null || val.isEmpty) {
                         return "Email is required";
                       }
-                      if (!val.contains("@")) return "Invalid email address";
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(val)) {
+                        return "Invalid email address";
+                      }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: "Password",
-                      prefixIcon: Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () {
+                          setState(() => _obscurePassword = !_obscurePassword);
+                        },
+                      ),
                     ),
-                    obscureText: true,
+                    obscureText: _obscurePassword,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (val) {
                       if (val == null || val.isEmpty) {
                         return "Password is required";
@@ -87,11 +105,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _confirmPasswordController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: "Confirm Password",
-                      prefixIcon: Icon(Icons.lock_reset_rounded),
+                      prefixIcon: const Icon(Icons.lock_reset_rounded),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () {
+                          setState(
+                            () => _obscureConfirmPassword =
+                                !_obscureConfirmPassword,
+                          );
+                        },
+                      ),
                     ),
-                    obscureText: true,
+                    obscureText: _obscureConfirmPassword,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (val) {
                       if (val != _passwordController.text) {
                         return "Passwords do not match";

@@ -161,8 +161,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       prefixIcon: Icon(Icons.phone_outlined),
                     ),
                     keyboardType: TextInputType.phone,
-                    validator: (val) =>
-                        val == null || val.isEmpty ? "Required" : null,
+                    validator: (val) {
+                      if (val == null || val.isEmpty) return "Required";
+                      if (!RegExp(r'^\d{10}$').hasMatch(val)) {
+                        return "Enter a valid 10-digit number";
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 48),
                   ElevatedButton(

@@ -82,11 +82,15 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _authService.logout();
-    await NotificationService.logout();
-    _firebaseUser = null;
-    _userProfile = null;
-    notifyListeners();
+    try {
+      await _authService.logout();
+      await NotificationService.logout();
+      _firebaseUser = null;
+      _userProfile = null;
+      notifyListeners();
+    } catch (e) {
+      //ignore
+    }
   }
 
   Future<void> completeProfile({

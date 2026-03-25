@@ -91,6 +91,33 @@ class AppTheme {
         ),
         hintStyle: GoogleFonts.outfit(color: AppColors.textSecondary),
       ),
+      timePickerTheme: TimePickerThemeData(
+        backgroundColor: AppColors.surface,
+        dialBackgroundColor: AppColors.background,
+        dayPeriodColor: AppColors.textSecondary.withValues(alpha: 0.5),
+        hourMinuteShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        hourMinuteTextColor: AppColors.textPrimary,
+        dayPeriodTextColor: AppColors.textPrimary,
+      ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: AppColors.surface,
+        headerBackgroundColor: AppColors.primary,
+        headerForegroundColor: Colors.white,
+        dayBackgroundColor: WidgetStatePropertyAll(AppColors.background),
+        // surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        // dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+        //   if (states.contains(WidgetState.selected)) return Colors.white;
+        //   return AppColors.textPrimary;
+        // }),
+        todayBackgroundColor: WidgetStateProperty.all(
+          AppColors.primary.withValues(alpha: 0.1),
+        ),
+
+        todayForegroundColor: WidgetStateProperty.all(AppColors.primary),
+      ),
     );
   }
 }

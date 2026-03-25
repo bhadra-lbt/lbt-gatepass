@@ -139,11 +139,19 @@ class DatabaseService {
     String id,
     GatePassStatus status, {
     String? rejectionReason,
+    String? approvedByName,
+    String? approvedByPhone,
+    String? approvedByRole,
   }) async {
-    await _gatePasses.doc(id).update({
+    final Map<String, dynamic> data = {
       'status': status.name,
-      'rejectionReason': ?rejectionReason,
-    });
+    };
+    if (rejectionReason != null) data['rejectionReason'] = rejectionReason;
+    if (approvedByName != null) data['approvedByName'] = approvedByName;
+    if (approvedByPhone != null) data['approvedByPhone'] = approvedByPhone;
+    if (approvedByRole != null) data['approvedByRole'] = approvedByRole;
+
+    await _gatePasses.doc(id).update(data);
   }
 
   // Record student exit with notification tracking
@@ -153,13 +161,20 @@ class DatabaseService {
     String? overdueStudentId,
     String? overdueFacultyId,
   }) async {
-    await _gatePasses.doc(id).update({
+    final Map<String, dynamic> data = {
       'status': GatePassStatus.exited.name,
       'exitDateTime': FieldValue.serverTimestamp(),
-      'warningNotificationId': ?warningId,
-      'overdueStudentNotificationId': ?overdueStudentId,
-      'overdueFacultyNotificationId': ?overdueFacultyId,
-    });
+    };
+
+    if (warningId != null) data['warningNotificationId'] = warningId;
+    if (overdueStudentId != null) {
+      data['overdueStudentNotificationId'] = overdueStudentId;
+    }
+    if (overdueFacultyId != null) {
+      data['overdueFacultyNotificationId'] = overdueFacultyId;
+    }
+
+    await _gatePasses.doc(id).update(data);
   }
 
   // Record student return
@@ -211,10 +226,8 @@ class DatabaseService {
 
   // Get UIDs for hierarchical notifications (Section Staff + Parent HOD)
   Future<List<String>> getDepartmentFacultyIds(String studentDept) async {
-    // Determine parent department (e.g., "CSE 1" -> "CSE")
     String parentDept = studentDept.split(' ')[0];
 
-    // Fetch all staff and HODs (Small collection, efficient to filter)
     final snapshot = await _firestore
         .collection('users')
         .where('role', whereIn: ['staff', 'hod'])
@@ -225,16 +238,24 @@ class DatabaseService {
           final data = doc.data();
           final role = data['role'];
           final userDept = data['department'];
-
-          // Condition 1: Staff member in the student's specific section
           if (role == 'staff' && userDept == studentDept) return true;
-
-          // Condition 2: HOD of the parent department
           if (role == 'hod' && userDept == parentDept) return true;
-
           return false;
         })
         .map((doc) => doc.id)
         .toList();
+  }
+
+  // Get all staff members for a specific department
+  Future<List<Map<String, dynamic>>> getDepartmentStaffMembers(
+    String studentDept,
+  ) async {
+    final snapshot = await _firestore
+        .collection('users')
+        .where('role', isEqualTo: 'staff')
+        .where('department', isEqualTo: studentDept)
+        .get();
+
+    return snapshot.docs.map((doc) => doc.data()).toList();
   }
 }

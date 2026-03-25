@@ -20,6 +20,9 @@ class GatePassRequest {
   final String? warningNotificationId;
   final String? overdueStudentNotificationId;
   final String? overdueFacultyNotificationId;
+  final String? approvedByName;
+  final String? approvedByPhone;
+  final String? approvedByRole;
 
   GatePassRequest({
     required this.id,
@@ -39,6 +42,9 @@ class GatePassRequest {
     this.warningNotificationId,
     this.overdueStudentNotificationId,
     this.overdueFacultyNotificationId,
+    this.approvedByName,
+    this.approvedByPhone,
+    this.approvedByRole,
   });
 
   DateTime? get expiryDateTime {
@@ -75,6 +81,9 @@ class GatePassRequest {
     String? warningNotificationId,
     String? overdueStudentNotificationId,
     String? overdueFacultyNotificationId,
+    String? approvedByName,
+    String? approvedByPhone,
+    String? approvedByRole,
   }) {
     return GatePassRequest(
       id: id,
@@ -97,6 +106,9 @@ class GatePassRequest {
           overdueStudentNotificationId ?? this.overdueStudentNotificationId,
       overdueFacultyNotificationId:
           overdueFacultyNotificationId ?? this.overdueFacultyNotificationId,
+      approvedByName: approvedByName ?? this.approvedByName,
+      approvedByPhone: approvedByPhone ?? this.approvedByPhone,
+      approvedByRole: approvedByRole ?? this.approvedByRole,
     );
   }
 
@@ -126,6 +138,9 @@ class GatePassRequest {
       'warningNotificationId': warningNotificationId,
       'overdueStudentNotificationId': overdueStudentNotificationId,
       'overdueFacultyNotificationId': overdueFacultyNotificationId,
+      'approvedByName': approvedByName,
+      'approvedByPhone': approvedByPhone,
+      'approvedByRole': approvedByRole,
     };
   }
 
@@ -155,6 +170,9 @@ class GatePassRequest {
       warningNotificationId: map['warningNotificationId'],
       overdueStudentNotificationId: map['overdueStudentNotificationId'],
       overdueFacultyNotificationId: map['overdueFacultyNotificationId'],
+      approvedByName: map['approvedByName'],
+      approvedByPhone: map['approvedByPhone'],
+      approvedByRole: map['approvedByRole'],
     );
   }
 }

@@ -547,9 +547,13 @@ class _StaffDashboardState extends State<StaffDashboard> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
+                      final auth = context.read<AuthProvider>();
                       context.read<GatePassProvider>().updateStatus(
                         request.id,
                         GatePassStatus.approved,
+                        approvedByName: auth.userName,
+                        approvedByPhone: auth.userProfile?['phone'],
+                        approvedByRole: 'staff',
                       );
                     },
                     style: ElevatedButton.styleFrom(

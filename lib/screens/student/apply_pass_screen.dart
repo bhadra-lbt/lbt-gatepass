@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
@@ -59,6 +60,24 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 30)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              onSurface: AppColors.textPrimary,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -71,16 +90,86 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: isFrom ? _fromTime : _toTime,
+      // builder: (context, child) {
+      //   return Theme(
+      //     data: Theme.of(
+      //       context,
+      //     ).copyWith(materialTapTargetSize: MaterialTapTargetSize.padded),
+      //     child: child!,
+      //   );
+      // },
     );
-    if (picked != null) {
-      setState(() {
-        if (isFrom) {
-          _fromTime = picked;
-        } else {
+
+    if (picked == null) return;
+
+    final now = DateTime.now();
+    final isToday =
+        _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+
+    final pickedDateTime = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      picked.hour,
+      picked.minute,
+    );
+
+    // 1. Enforce Future Time for Today
+    if (isToday && pickedDateTime.isBefore(now)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Cannot select a past time for today"),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      if (isFrom) {
+        _fromTime = picked;
+        // 2. Ensure From Time is before To Time
+        // If new From Time is after current To Time, adjust To Time to match From Time
+        final toDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          _toTime.hour,
+          _toTime.minute,
+        );
+
+        if (toDateTime.isBefore(pickedDateTime)) {
           _toTime = picked;
         }
-      });
-    }
+      } else {
+        // 3. Enforce To Time is after From Time
+        final fromDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          _fromTime.hour,
+          _fromTime.minute,
+        );
+
+        if (pickedDateTime.isBefore(fromDateTime) ||
+            pickedDateTime.isAtSameMomentAs(fromDateTime)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("To Time must be after From Time"),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+          return;
+        }
+        _toTime = picked;
+      }
+    });
   }
 
   @override
@@ -201,6 +290,45 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
                           return;
                         }
 
+                        // Final Time Validation
+                        final now = DateTime.now();
+                        final fromDateTime = DateTime(
+                          _selectedDate.year,
+                          _selectedDate.month,
+                          _selectedDate.day,
+                          _fromTime.hour,
+                          _fromTime.minute,
+                        );
+                        final toDateTime = DateTime(
+                          _selectedDate.year,
+                          _selectedDate.month,
+                          _selectedDate.day,
+                          _toTime.hour,
+                          _toTime.minute,
+                        );
+
+                        if (fromDateTime.isBefore(
+                          now.subtract(const Duration(minutes: 1)),
+                        )) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("From Time cannot be in the past"),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (!toDateTime.isAfter(fromDateTime)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("To Time must be after From Time"),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                          return;
+                        }
+
                         if (auth.firebaseUser == null) return;
 
                         final newRequest = GatePassRequest(
@@ -246,27 +374,50 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
     required String text,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 20),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.textPrimary,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 20),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Text(
+                text,
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: AppColors.textSecondary.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
         ),
       ),
     );
