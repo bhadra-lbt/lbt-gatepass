@@ -23,6 +23,8 @@ class GatePassProvider extends ChangeNotifier {
   StreamSubscription? _filteredSubscription;
   String? _lastStudentId;
   String? _lastDept;
+  DateTime? _lastDate;
+  GatePassStatus? _lastStatus;
 
   List<GatePassRequest> get studentRequests => _studentRequests;
   List<GatePassRequest> get pendingRequests => _pendingRequests;
@@ -38,10 +40,16 @@ class GatePassProvider extends ChangeNotifier {
     DateTime? date,
     GatePassStatus? status,
   }) {
-    if (_lastStudentId == studentId && date == null && status == null) return;
+    if (_lastStudentId == studentId &&
+        _lastDate == date &&
+        _lastStatus == status) {
+      return;
+    }
 
     _studentSubscription?.cancel();
     _lastStudentId = studentId;
+    _lastDate = date;
+    _lastStatus = status;
 
     _studentSubscription = _dbService
         .getStudentRequests(studentId, date: date, status: status)

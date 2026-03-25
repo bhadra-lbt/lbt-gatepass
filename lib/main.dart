@@ -41,6 +41,16 @@ class SmartGatePassApp extends StatelessWidget {
       title: 'LBT Smart Gate Pass',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      builder: (context, child) {
+        return MediaQuery(
+          // This forces the text scale factor to be 1.0 regardless of system settings
+          // This prevents the UI from breaking on devices with 'Large Font' settings
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(1)),
+          child: child!,
+        );
+      },
       home: const RootScreen(),
     );
   }
