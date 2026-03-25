@@ -234,7 +234,7 @@ class _HODDashboardState extends State<HODDashboard> {
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha:0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -278,7 +278,7 @@ class _HODDashboardState extends State<HODDashboard> {
                           ),
                         ),
                         style: TextButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.2),
+                          backgroundColor: Colors.white.withValues(alpha:0.2),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 8,
@@ -321,7 +321,7 @@ class _HODDashboardState extends State<HODDashboard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isUrgent ? AppColors.error : Colors.white.withOpacity(0.15),
+        color: isUrgent ? AppColors.error : Colors.white.withValues(alpha:0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -361,7 +361,7 @@ class _HODDashboardState extends State<HODDashboard> {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             padding: const EdgeInsets.all(16),
-            color: AppColors.background.withOpacity(
+            color: AppColors.background.withValues(alpha:
               0.08,
             ), // 3. Translucent color
             child: Row(
@@ -415,7 +415,7 @@ class _HODDashboardState extends State<HODDashboard> {
           side: BorderSide(color: Colors.grey.shade100),
         ),
         leading: CircleAvatar(
-          backgroundColor: _getStatusColor(request.status).withOpacity(0.1),
+          backgroundColor: _getStatusColor(request.status).withValues(alpha:0.1),
           child: Icon(
             Icons.person_outline,
             color: _getStatusColor(request.status),
@@ -460,7 +460,7 @@ class _HODDashboardState extends State<HODDashboard> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppColors.secondary.withOpacity(0.1),
+                  backgroundColor: AppColors.secondary.withValues(alpha:0.1),
                   child: const Icon(Icons.person, color: AppColors.secondary),
                 ),
                 const SizedBox(width: 12),

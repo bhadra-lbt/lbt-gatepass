@@ -22,12 +22,11 @@ class AppTheme {
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.surface,
-        background: AppColors.background,
+
         error: AppColors.error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: AppColors.textPrimary,
-        onBackground: AppColors.textPrimary,
       ),
       scaffoldBackgroundColor: AppColors.background,
       textTheme: GoogleFonts.outfitTextTheme().copyWith(

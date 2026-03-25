@@ -122,7 +122,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                     horizontal: 16,
                     vertical: 8,
                   ),
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   child: Row(
                     children: [
                       const Icon(
@@ -154,7 +154,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(20),
                         itemCount: requests.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        separatorBuilder: (_, _) => const SizedBox(height: 16),
                         itemBuilder: (context, index) {
                           final request = requests[index];
                           return _buildRequestCard(context, request);
@@ -241,7 +241,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -376,9 +376,9 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         label,

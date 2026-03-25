@@ -124,7 +124,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       leading: CircleAvatar(
                         backgroundColor: _getStatusColor(
                           recentRequest.status,
-                        ).withOpacity(0.1),
+                        ).withValues(alpha: 0.1),
                         child: Icon(
                           _getStatusIcon(recentRequest.status),
                           color: _getStatusColor(recentRequest.status),
@@ -216,7 +216,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.3),
+              color: color.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -245,7 +245,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
             Text(
               subtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
           ],

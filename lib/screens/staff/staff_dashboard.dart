@@ -150,7 +150,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.1),
+                          color: AppColors.warning.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -233,7 +233,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -330,7 +330,9 @@ class _StaffDashboardState extends State<StaffDashboard> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: isUrgent ? AppColors.error : Colors.white.withOpacity(0.15),
+        color: isUrgent
+            ? AppColors.error
+            : Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -358,14 +360,14 @@ class _StaffDashboardState extends State<StaffDashboard> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.error.withOpacity(0.05),
+        color: AppColors.error.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.error.withOpacity(0.2)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AppColors.error.withOpacity(0.1),
+            backgroundColor: AppColors.error.withValues(alpha: 0.1),
             child: const Icon(Icons.person, color: AppColors.error, size: 20),
           ),
           const SizedBox(width: 12),
@@ -389,7 +391,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
           ),
           Icon(
             Icons.warning,
-            color: AppColors.error.withOpacity(0.5),
+            color: AppColors.error.withValues(alpha: 0.5),
             size: 16,
           ),
         ],
@@ -412,7 +414,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: _getStatusColor(request.status).withOpacity(0.1),
+                color: _getStatusColor(request.status).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

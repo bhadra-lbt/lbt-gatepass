@@ -118,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               width: 4,
                             ),
                             image: const DecorationImage(
@@ -279,7 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -298,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           prefixIcon: Icon(
             icon,
-            color: AppColors.primary.withOpacity(0.7),
+            color: AppColors.primary.withValues(alpha: 0.7),
             size: 20,
           ),
           border: OutlineInputBorder(
@@ -306,7 +306,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: enabled ? Colors.white : Colors.grey.withOpacity(0.05),
+          fillColor: enabled
+              ? Colors.white
+              : Colors.grey.withValues(alpha: 0.05),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 16,

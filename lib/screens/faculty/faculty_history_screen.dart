@@ -79,7 +79,7 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.all(20),
                       itemCount: history.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      separatorBuilder: (_, _) => const SizedBox(height: 16),
                       itemBuilder: (context, index) =>
                           _buildHistoryCard(history[index]),
                     ),
@@ -183,7 +183,7 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
                     border: Border.all(color: Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(12),
                     color: _selectedDate != null
-                        ? AppColors.primary.withOpacity(0.05)
+                        ? AppColors.primary.withValues(alpha: 0.05)
                         : Colors.transparent,
                   ),
                   child: Icon(
@@ -329,7 +329,7 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

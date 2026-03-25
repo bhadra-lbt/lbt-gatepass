@@ -161,7 +161,7 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: recentActivity.take(15).length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final activity = recentActivity[index];
                       return _buildActivityCard(activity);
@@ -277,8 +277,8 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: (isReturn ? Colors.blue : Colors.orange).withOpacity(
-            0.1,
+          backgroundColor: (isReturn ? Colors.blue : Colors.orange).withValues(
+            alpha: 0.1,
           ),
           child: Icon(
             isReturn ? Icons.login_rounded : Icons.logout_rounded,
@@ -332,7 +332,7 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
