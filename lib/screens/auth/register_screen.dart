@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
 import '../../providers/auth_provider.dart';
@@ -47,10 +48,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                   Text(
                     "Enter your credentials to get started",
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: GoogleFonts.outfit(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 48),
                   TextFormField(

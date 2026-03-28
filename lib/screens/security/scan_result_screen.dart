@@ -267,9 +267,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                           "${widget.request!.approvedByName!} (${widget.request!.approvedByRole?.toUpperCase() ?? 'APPROVER'})",
                         ),
                       const Divider(color: Colors.white24, height: 32),
-                      const Text(
+                       Text(
                         "FACULTY CONTACTS",
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           color: Colors.white70,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -290,9 +290,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                           }
                           final staffList = snapshot.data ?? [];
                           if (staffList.isEmpty) {
-                            return const Text(
+                            return  Text(
                               "No staff advisors found for this department.",
-                              style: TextStyle(
+                              style: GoogleFonts.outfit(
                                 color: Colors.white60,
                                 fontSize: 12,
                               ),
@@ -319,7 +319,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                                   ),
                                   subtitle: Text(
                                     phone ?? "No phone",
-                                    style: const TextStyle(
+                                    style: GoogleFonts.outfit(
                                       color: Colors.white70,
                                       fontSize: 11,
                                     ),

@@ -5,7 +5,7 @@ class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Collection reference
-  CollectionReference get _gatePasses => _firestore.collection('gate_passes');
+  CollectionReference<Map<String, dynamic>> get _gatePasses => _firestore.collection('gate_passes');
 
   // Create a new gate pass request
   Future<void> createGatePassRequest(GatePassRequest request) async {
@@ -18,7 +18,7 @@ class DatabaseService {
     DateTime? date,
     GatePassStatus? status,
   }) {
-    Query query = _gatePasses.where('studentId', isEqualTo: studentId);
+    var query = _gatePasses.where('studentId', isEqualTo: studentId);
 
     if (status != null) {
       query = query.where('status', isEqualTo: status.name);
@@ -34,31 +34,25 @@ class DatabaseService {
 
     return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+        return GatePassRequest.fromMap(doc.data());
       }).toList();
     });
   }
 
   // Get overdue requests (Exited but past expiry time)
-  Stream<List<GatePassRequest>> getOverdueRequests({String? department}) {
-    Query query = _gatePasses.where(
+  Stream<List<GatePassRequest>> getOverdueRequests({String? department, bool isHod = false}) {
+    Query<Map<String, dynamic>> query = _gatePasses.where(
       'status',
       isEqualTo: GatePassStatus.exited.name,
     );
 
-    if (department != null && department != "All") {
-      if (department == "CSE") {
-        query = query.where('department', whereIn: ['CSE 1', 'CSE 2']);
-      } else {
-        query = query.where('department', isEqualTo: department);
-      }
-    }
+    query = _applyDepartmentFilter(query, department, isHod: isHod);
 
     return query.snapshots().map((snapshot) {
       final now = DateTime.now();
       return snapshot.docs
           .map((doc) {
-            return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+            return GatePassRequest.fromMap(doc.data());
           })
           .where((req) {
             final expiry = req.expiryDateTime;
@@ -68,22 +62,30 @@ class DatabaseService {
     });
   }
 
+  // Helper to handle hierarchical department filtering (e.g. CSE includes CSE 1, CSE 2)
+  Query<Map<String, dynamic>> _applyDepartmentFilter(Query<Map<String, dynamic>> query, String? department, {bool isHod = false}) {
+    if (department == null || department == "All") return query;
+    
+    if (isHod) {
+      return query
+          .where('department', isGreaterThanOrEqualTo: department)
+          .where('department', isLessThanOrEqualTo: '$department\uf8ff');
+    } else {
+      return query.where('department', isEqualTo: department);
+    }
+  }
+
   // Comprehensive query for all gate passes (for Security/Admins/Faculty History)
   Stream<List<GatePassRequest>> getFilteredGatePasses({
     String? department,
+    bool isHod = false,
     GatePassStatus? status,
     DateTime? date,
     String? semester,
   }) {
-    Query query = _gatePasses;
+    Query<Map<String, dynamic>> query = _gatePasses;
 
-    if (department != null && department != "All") {
-      if (department == "CSE") {
-        query = query.where('department', whereIn: ['CSE 1', 'CSE 2']);
-      } else {
-        query = query.where('department', isEqualTo: department);
-      }
-    }
+    query = _applyDepartmentFilter(query, department, isHod: isHod);
 
     if (status != null) {
       query = query.where('status', isEqualTo: status.name);
@@ -103,7 +105,7 @@ class DatabaseService {
 
     return query.snapshots().map((snapshot) {
       final docs = snapshot.docs.map((doc) {
-        return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+        return GatePassRequest.fromMap(doc.data());
       }).toList();
 
       // Sort by date descending
@@ -112,24 +114,36 @@ class DatabaseService {
     });
   }
 
+  // Fetch unique students under a department
+  Stream<List<Map<String, dynamic>>> getStudentsByDepartment({
+    String? department,
+    bool isHod = false,
+  }) {
+    Query<Map<String, dynamic>> query = _firestore.collection('users').where('role', isEqualTo: 'student');
+
+    query = _applyDepartmentFilter(query, department, isHod: isHod);
+
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['uid'] = doc.id;
+        return data;
+      }).toList();
+    });
+  }
+
   // Get all pending requests for staff/HOD
-  Stream<List<GatePassRequest>> getPendingRequests({String? department}) {
-    Query query = _gatePasses.where(
+  Stream<List<GatePassRequest>> getPendingRequests({String? department, bool isHod = false}) {
+    Query<Map<String, dynamic>> query = _gatePasses.where(
       'status',
       isEqualTo: GatePassStatus.pending.name,
     );
 
-    if (department != null && department != "All") {
-      if (department == "CSE") {
-        query = query.where('department', whereIn: ['CSE 1', 'CSE 2']);
-      } else {
-        query = query.where('department', isEqualTo: department);
-      }
-    }
+    query = _applyDepartmentFilter(query, department, isHod: isHod);
 
     return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+        return GatePassRequest.fromMap(doc.data());
       }).toList();
     });
   }
@@ -188,8 +202,8 @@ class DatabaseService {
   // Get a single request by ID
   Future<GatePassRequest?> getRequestById(String id) async {
     final doc = await _gatePasses.doc(id).get();
-    if (doc.exists) {
-      return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+    if (doc.exists && doc.data() != null) {
+      return GatePassRequest.fromMap(doc.data()!);
     }
     return null;
   }
@@ -204,7 +218,7 @@ class DatabaseService {
         .snapshots()
         .map((snapshot) {
           final docs = snapshot.docs.map((doc) {
-            return GatePassRequest.fromMap(doc.data() as Map<String, dynamic>);
+            return GatePassRequest.fromMap(doc.data());
           }).toList();
 
           // Sort by latest activity (either exit or return time)

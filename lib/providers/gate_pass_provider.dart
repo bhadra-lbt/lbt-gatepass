@@ -13,6 +13,7 @@ class GatePassProvider extends ChangeNotifier {
   List<GatePassRequest> _overdueRequests = [];
   List<GatePassRequest> _activeOutsideRequests = [];
   List<GatePassRequest> _filteredActivity = [];
+  List<Map<String, dynamic>> _students = [];
   bool _isLoading = false;
 
   StreamSubscription? _studentSubscription;
@@ -32,6 +33,7 @@ class GatePassProvider extends ChangeNotifier {
   List<GatePassRequest> get overdueRequests => _overdueRequests;
   List<GatePassRequest> get activeOutsideRequests => _activeOutsideRequests;
   List<GatePassRequest> get filteredActivity => _filteredActivity;
+  List<Map<String, dynamic>> get students => _students;
   bool get isLoading => _isLoading;
 
   // Fetch requests for a specific student (real-time)
@@ -61,10 +63,10 @@ class GatePassProvider extends ChangeNotifier {
         });
   }
 
-  void listenToOverdueRequests({String? department}) {
+  void listenToOverdueRequests({String? department, bool isHod = false}) {
     _overdueSubscription?.cancel();
     _overdueSubscription = _dbService
-        .getOverdueRequests(department: department)
+        .getOverdueRequests(department: department, isHod: isHod)
         .listen((requests) {
           _overdueRequests = requests;
           notifyListeners();
@@ -72,11 +74,12 @@ class GatePassProvider extends ChangeNotifier {
   }
 
   // NEW: Fetch all students currently outside for HOD/Staff stats
-  void listenToActiveOutsideRequests({String? department}) {
+  void listenToActiveOutsideRequests({String? department, bool isHod = false}) {
     _activeOutsideSubscription?.cancel();
     _activeOutsideSubscription = _dbService
         .getFilteredGatePasses(
           department: department,
+          isHod: isHod,
           status: GatePassStatus.exited,
         )
         .listen((requests) {
@@ -88,6 +91,7 @@ class GatePassProvider extends ChangeNotifier {
   // NEW: Comprehensive filtered activity for Security / Faculty History
   void listenToFilteredActivity({
     String? department,
+    bool isHod = false,
     GatePassStatus? status,
     DateTime? date,
     String? semester,
@@ -97,6 +101,7 @@ class GatePassProvider extends ChangeNotifier {
     _filteredSubscription = _dbService
         .getFilteredGatePasses(
           department: department,
+          isHod: isHod,
           status: status,
           date: date,
           semester: semester,
@@ -118,18 +123,39 @@ class GatePassProvider extends ChangeNotifier {
   // Fetch pending requests for staff (real-time)
 
   // Fetch pending requests for staff (real-time)
-  void listenToPendingRequests({String? department}) {
+  // Fetch pending requests for staff (real-time)
+  void listenToPendingRequests({String? department, bool isHod = false}) {
     if (_lastDept == department) return;
 
     _pendingSubscription?.cancel();
     _lastDept = department;
 
     _pendingSubscription = _dbService
-        .getPendingRequests(department: department)
+        .getPendingRequests(department: department, isHod: isHod)
         .listen((requests) {
           // Sort locally by date descending
           requests.sort((a, b) => b.date.compareTo(a.date));
           _pendingRequests = requests;
+          notifyListeners();
+        });
+  }
+
+  StreamSubscription? _studentsSubscription;
+  void listenToStudents({String? department, bool isHod = false, String? searchQuery}) {
+    _studentsSubscription?.cancel();
+    _studentsSubscription = _dbService
+        .getStudentsByDepartment(department: department, isHod: isHod)
+        .listen((students) {
+          if (searchQuery != null && searchQuery.isNotEmpty) {
+            final query = searchQuery.toLowerCase();
+            _students = students.where((s) {
+              final name = (s['name'] as String?)?.toLowerCase() ?? '';
+              final reg = (s['registerNumber'] as String?)?.toLowerCase() ?? '';
+              return name.contains(query) || reg.contains(query);
+            }).toList();
+          } else {
+            _students = students;
+          }
           notifyListeners();
         });
   }
@@ -300,6 +326,7 @@ class GatePassProvider extends ChangeNotifier {
     _overdueSubscription?.cancel();
     _activeOutsideSubscription?.cancel();
     _filteredSubscription?.cancel();
+    _studentsSubscription?.cancel();
     super.dispose();
   }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
 import '../../providers/gate_pass_provider.dart';
+import '../../services/pdf_service.dart';
 
 class SecurityHistoryScreen extends StatefulWidget {
   const SecurityHistoryScreen({super.key});
@@ -47,6 +49,16 @@ class _SecurityHistoryScreenState extends State<SecurityHistoryScreen> {
       appBar: AppBar(
         title: const Text("Gate Pass Archive"),
         actions: [
+          IconButton(
+            onPressed: () => PdfService.exportDepartmentReport(
+              department: _selectedDept ?? "All",
+              history: history,
+              context: context,
+              date: _selectedDate,
+            ),
+            icon: const Icon(Icons.picture_as_pdf_rounded),
+            tooltip: "Export as PDF",
+          ),
           IconButton(
             onPressed: () {
               setState(() {
@@ -209,7 +221,7 @@ class _SecurityHistoryScreenState extends State<SecurityHistoryScreen> {
                     _selectedDate == null
                         ? "Filter by Date"
                         : DateFormat('dd MMM yyyy').format(_selectedDate!),
-                    style: TextStyle(
+                    style: GoogleFonts.outfit(
                       fontSize: 13,
                       color: _selectedDate == null
                           ? Colors.grey
@@ -250,7 +262,10 @@ class _SecurityHistoryScreenState extends State<SecurityHistoryScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+          style: GoogleFonts.outfit(
+            fontSize: 10,
+            color: AppColors.textSecondary,
+          ),
         ),
         const SizedBox(height: 4),
         Container(
@@ -268,7 +283,7 @@ class _SecurityHistoryScreenState extends State<SecurityHistoryScreen> {
                   value: i,
                   child: Text(
                     itemLabel?.call(i) ?? i.toString(),
-                    style: const TextStyle(fontSize: 12),
+                    style: GoogleFonts.outfit(fontSize: 12),
                   ),
                 );
               }).toList(),
@@ -290,11 +305,11 @@ class _SecurityHistoryScreenState extends State<SecurityHistoryScreen> {
       child: ListTile(
         title: Text(
           request.studentName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           "S${request.semester ?? '?'} ${request.department ?? 'N/A'}\n${DateFormat('dd MMM').format(request.date)} • ${request.reason}",
-          style: const TextStyle(fontSize: 12),
+          style: GoogleFonts.outfit(fontSize: 12),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -302,7 +317,7 @@ class _SecurityHistoryScreenState extends State<SecurityHistoryScreen> {
           children: [
             Text(
               request.status.name.toUpperCase(),
-              style: TextStyle(
+              style: GoogleFonts.outfit(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
                 color: _getStatusColor(request.status),
@@ -311,7 +326,10 @@ class _SecurityHistoryScreenState extends State<SecurityHistoryScreen> {
             const SizedBox(height: 4),
             Text(
               request.toTime,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

@@ -11,6 +11,7 @@ import '../../providers/gate_pass_provider.dart';
 import '../../widgets/expandable_text.dart';
 import '../profile/profile_screen.dart';
 import '../faculty/faculty_history_screen.dart';
+import '../faculty/student_search_screen.dart';
 
 class HODDashboard extends StatefulWidget {
   const HODDashboard({super.key});
@@ -35,10 +36,10 @@ class _HODDashboardState extends State<HODDashboard> {
   void _fetchInitialData() {
     if (_hodDept != null) {
       final provider = context.read<GatePassProvider>();
-      provider.listenToPendingRequests(department: _hodDept);
-      provider.listenToFilteredActivity(department: _hodDept);
-      provider.listenToOverdueRequests(department: _hodDept);
-      provider.listenToActiveOutsideRequests(department: _hodDept);
+      provider.listenToPendingRequests(department: _hodDept, isHod: true);
+      provider.listenToFilteredActivity(department: _hodDept, isHod: true);
+      provider.listenToOverdueRequests(department: _hodDept, isHod: true);
+      provider.listenToActiveOutsideRequests(department: _hodDept, isHod: true);
     }
   }
 
@@ -93,6 +94,71 @@ class _HODDashboardState extends State<HODDashboard> {
                 overdueCount: overdueRequests.length,
               ),
 
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ClipRRect(
+                  // 1. Necessary to keep the blur inside the card corners
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    // 2. Blurs what is BEHIND the card
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.textPrimary.withValues(alpha: 0.25),
+                            AppColors.error.withValues(alpha: 0.2),
+                            AppColors.success.withValues(alpha: 0.2),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.background.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          "Search Students",
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "Search for students history of gatepass",
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300,
+                            color: AppColors.textSecondary,
+                            letterSpacing: .12,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.primary,
+                        ),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const StudentSearchScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 32),
 
               // 2. Overdue Section (Urgent)
@@ -107,9 +173,9 @@ class _HODDashboardState extends State<HODDashboard> {
                         size: 22,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         "Currently Overdue",
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColors.error,
@@ -134,9 +200,9 @@ class _HODDashboardState extends State<HODDashboard> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       "Pending Approvals",
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -145,7 +211,7 @@ class _HODDashboardState extends State<HODDashboard> {
                       Chip(
                         label: Text(
                           "${pendingRequests.length}",
-                          style: const TextStyle(
+                          style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -177,11 +243,14 @@ class _HODDashboardState extends State<HODDashboard> {
 
               // 4. Recent History Section
               if (recentHistory.isNotEmpty) ...[
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
                     "Recent Activities",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -208,7 +277,8 @@ class _HODDashboardState extends State<HODDashboard> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => FacultyHistoryScreen(department: _hodDept!),
+                builder: (_) =>
+                    FacultyHistoryScreen(department: _hodDept!, isHod: true),
               ),
             );
           }
@@ -234,7 +304,7 @@ class _HODDashboardState extends State<HODDashboard> {
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha:0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -248,13 +318,15 @@ class _HODDashboardState extends State<HODDashboard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "HOD Office",
-                              style: TextStyle(color: AppColors.primary),
+                              style: GoogleFonts.outfit(
+                                color: AppColors.primary,
+                              ),
                             ),
                             Text(
                               _hodDept ?? "Unknown Dept",
-                              style: const TextStyle(
+                              style: GoogleFonts.outfit(
                                 color: AppColors.primary,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -263,30 +335,44 @@ class _HODDashboardState extends State<HODDashboard> {
                           ],
                         ),
                       ),
-                      TextButton.icon(
-                        onPressed: null, // Entire card is clickable
-                        icon: const Icon(
-                          Icons.history_rounded,
-                          color: AppColors.primary,
-                          size: 20,
-                        ),
-                        label: const Text(
-                          "HISTORY",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
+                      Column(
+                        children: [
+                          // IconButton(
+                          //   onPressed: () => Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(builder: (_) => const StudentSearchScreen()),
+                          //   ),
+                          //   icon: const Icon(Icons.person_search_rounded, color: AppColors.primary),
+                          //   tooltip: "Search Students",
+                          // ),
+                          TextButton.icon(
+                            onPressed: null, // Entire card is clickable
+                            icon: const Icon(
+                              Icons.history_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                            label: Text(
+                              "HISTORY",
+                              style: GoogleFonts.outfit(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.2,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
                           ),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha:0.2),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -321,14 +407,16 @@ class _HODDashboardState extends State<HODDashboard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isUrgent ? AppColors.error : Colors.white.withValues(alpha:0.15),
+        color: isUrgent
+            ? AppColors.error
+            : Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
           Text(
             val,
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               color: isUrgent ? Colors.white : AppColors.primary,
               fontWeight: FontWeight.bold,
               fontSize: 18,
@@ -336,7 +424,7 @@ class _HODDashboardState extends State<HODDashboard> {
           ),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               color: isUrgent ? Colors.white : AppColors.primary,
               fontSize: 10,
             ),
@@ -361,8 +449,8 @@ class _HODDashboardState extends State<HODDashboard> {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             padding: const EdgeInsets.all(16),
-            color: AppColors.background.withValues(alpha:
-              0.08,
+            color: AppColors.background.withValues(
+              alpha: 0.08,
             ), // 3. Translucent color
             child: Row(
               children: [
@@ -374,14 +462,14 @@ class _HODDashboardState extends State<HODDashboard> {
                     children: [
                       Text(
                         request.studentName,
-                        style: const TextStyle(
+                        style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold,
                           color: AppColors.error,
                         ),
                       ),
                       Text(
                         "S${request.semester} • Due: ${request.toTime}",
-                        style: const TextStyle(
+                        style: GoogleFonts.outfit(
                           fontSize: 12,
                           color: AppColors.error,
                         ),
@@ -415,7 +503,9 @@ class _HODDashboardState extends State<HODDashboard> {
           side: BorderSide(color: Colors.grey.shade100),
         ),
         leading: CircleAvatar(
-          backgroundColor: _getStatusColor(request.status).withValues(alpha:0.1),
+          backgroundColor: _getStatusColor(
+            request.status,
+          ).withValues(alpha: 0.1),
           child: Icon(
             Icons.person_outline,
             color: _getStatusColor(request.status),
@@ -424,7 +514,7 @@ class _HODDashboardState extends State<HODDashboard> {
         ),
         title: Text(
           request.studentName,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
         ),
         subtitle: Text(
           "${DateFormat('dd MMM').format(request.date)} • ${request.status.name}",
@@ -460,7 +550,7 @@ class _HODDashboardState extends State<HODDashboard> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppColors.secondary.withValues(alpha:0.1),
+                  backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
                   child: const Icon(Icons.person, color: AppColors.secondary),
                 ),
                 const SizedBox(width: 12),
@@ -470,7 +560,7 @@ class _HODDashboardState extends State<HODDashboard> {
                     children: [
                       Text(
                         request.studentName,
-                        style: const TextStyle(
+                        style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -574,9 +664,12 @@ class _HODDashboardState extends State<HODDashboard> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               "Please provide a reason for rejecting this gate pass request.",
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             TextField(

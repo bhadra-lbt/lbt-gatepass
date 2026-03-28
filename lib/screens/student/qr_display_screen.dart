@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
@@ -50,17 +51,17 @@ class QRDisplayScreen extends StatelessWidget {
                 const SizedBox(height: 40),
                 Text(
                   "Pass ID: ${request.id}",
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                 Text(
                   "Show this QR code at the security gate",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: GoogleFonts.outfit(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 48),
                 _buildInfoRow("Student", request.studentName),
@@ -83,10 +84,13 @@ class QRDisplayScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+          Text(
+            label,
+            style: GoogleFonts.outfit(color: AppColors.textSecondary),
+          ),
           Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.outfit(
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),

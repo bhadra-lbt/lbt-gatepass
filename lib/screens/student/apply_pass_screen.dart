@@ -71,7 +71,7 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.primary,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                textStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -186,17 +186,20 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+               Text(
                 "Pass Details",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                   Text(
                     "Reason for Leave",
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
                   ),
                   IconButton(
                     onPressed: _listen,
@@ -229,7 +232,10 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text("Date", style: TextStyle(fontWeight: FontWeight.w600)),
+               Text(
+                "Date",
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               _buildPickerTile(
                 icon: Icons.calendar_today_rounded,
@@ -243,9 +249,11 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                         Text(
                           "From Time",
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         _buildPickerTile(
@@ -261,9 +269,11 @@ class _ApplyPassScreenState extends State<ApplyPassScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                         Text(
                           "To Time",
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         _buildPickerTile(

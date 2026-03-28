@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +11,9 @@ import '../../widgets/expandable_text.dart';
 import '../profile/profile_screen.dart';
 import '../faculty/faculty_history_screen.dart';
 import 'package:intl/intl.dart';
+
+import '../faculty/student_search_screen.dart';
+import '../../models/user_role.dart';
 
 class StaffDashboard extends StatefulWidget {
   const StaffDashboard({super.key});
@@ -93,6 +98,71 @@ class _StaffDashboardState extends State<StaffDashboard> {
 
               const SizedBox(height: 24),
 
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ClipRRect(
+                  // 1. Necessary to keep the blur inside the card corners
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    // 2. Blurs what is BEHIND the card
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.textPrimary.withValues(alpha: 0.25),
+                            AppColors.error.withValues(alpha: 0.2),
+                            AppColors.success.withValues(alpha: 0.2),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.background.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          "Search Students",
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "Search for students history of gatepass",
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300,
+                            color: AppColors.textSecondary,
+                            letterSpacing: .12,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.primary,
+                        ),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const StudentSearchScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // 2. Overdue Section (Urgent)
               if (overdueRequests.isNotEmpty) ...[
                 Padding(
@@ -105,9 +175,9 @@ class _StaffDashboardState extends State<StaffDashboard> {
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         "Currently Overdue",
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColors.error,
@@ -135,9 +205,9 @@ class _StaffDashboardState extends State<StaffDashboard> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       "Pending Approvals",
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -155,7 +225,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
                         ),
                         child: Text(
                           "${pendingRequests.length} Tasks",
-                          style: const TextStyle(
+                          style: GoogleFonts.outfit(
                             color: AppColors.warning,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -185,11 +255,11 @@ class _StaffDashboardState extends State<StaffDashboard> {
 
               // 4. Recent Activity Section (History Summary)
               if (recentHistory.isNotEmpty) ...[
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
                     "Recent Activity",
-                    style: TextStyle(
+                    style: GoogleFonts.outfit(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -252,13 +322,16 @@ class _StaffDashboardState extends State<StaffDashboard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Advisor Dashboard",
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
                         ),
                         Text(
                           _dept ?? "Department",
-                          style: const TextStyle(
+                          style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -267,21 +340,25 @@ class _StaffDashboardState extends State<StaffDashboard> {
                       ],
                     ),
                   ),
-                  TextButton.icon(
-                    onPressed: null, // Click handled by parent InkWell
-                    icon: const Icon(
-                      Icons.history_rounded,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                    label: const Text(
-                      "HISTORY",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                  Column(
+                    children: [
+                      TextButton.icon(
+                        onPressed: null, // Click handled by parent InkWell
+                        icon: const Icon(
+                          Icons.history_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        label: Text(
+                          "HISTORY",
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -341,7 +418,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
           const SizedBox(height: 4),
           Text(
             val,
-            style: const TextStyle(
+            style: GoogleFonts.outfit(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -349,7 +426,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
           ),
           Text(
             label,
-            style: const TextStyle(color: Colors.white70, fontSize: 10),
+            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 10),
           ),
         ],
       ),
@@ -377,14 +454,17 @@ class _StaffDashboardState extends State<StaffDashboard> {
               children: [
                 Text(
                   request.studentName,
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   "Expected back by ${request.toTime}",
-                  style: const TextStyle(color: AppColors.error, fontSize: 12),
+                  style: GoogleFonts.outfit(
+                    color: AppColors.error,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -430,14 +510,14 @@ class _StaffDashboardState extends State<StaffDashboard> {
                 children: [
                   Text(
                     request.studentName,
-                    style: const TextStyle(
+                    style: GoogleFonts.outfit(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
                   ),
                   Text(
                     "${DateFormat('dd MMM').format(request.date)} • ${request.status.name.toUpperCase()}",
-                    style: const TextStyle(
+                    style: GoogleFonts.outfit(
                       color: AppColors.textSecondary,
                       fontSize: 11,
                     ),
@@ -580,9 +660,12 @@ class _StaffDashboardState extends State<StaffDashboard> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               "Please provide a reason for rejecting this gate pass request.",
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             TextField(

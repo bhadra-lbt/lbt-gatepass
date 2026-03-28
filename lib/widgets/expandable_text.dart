@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../core/app_theme.dart';
 
 class ExpandableText extends StatefulWidget {
@@ -38,7 +39,7 @@ class _ExpandableTextState extends State<ExpandableText> {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
                 isExpanded ? "Read less" : "Read more",
-                style: const TextStyle(
+                style: GoogleFonts.outfit(
                   color: AppColors.secondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
@@ -127,9 +128,9 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                     Text(
                       "Gate Activity",
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -147,12 +148,14 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
                 ),
                 const SizedBox(height: 16),
                 if (recentActivity.isEmpty)
-                  const Center(
+                   Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Text(
                         "No activity found",
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: GoogleFonts.outfit(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   )
@@ -195,11 +198,11 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
           ),
         ),
         const SizedBox(height: 8),
-        const Center(
+         Center(
           child: Text(
             "Scan student QR codes to verify gate pass validity in real-time.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary),
+            style: GoogleFonts.outfit(color: AppColors.textSecondary),
           ),
         ),
       ],
@@ -288,11 +291,11 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
         ),
         title: Text(
           activity.studentName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           "${isReturn ? 'Returned' : 'Exited'} • S${activity.semester ?? '?'}, ${activity.department ?? 'N/A'}",
-          style: const TextStyle(fontSize: 12),
+          style: GoogleFonts.outfit(fontSize: 12),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -300,14 +303,14 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
           children: [
             Text(
               timeStr,
-              style: const TextStyle(
+              style: GoogleFonts.outfit(
                 fontWeight: FontWeight.bold,
                 color: AppColors.primary,
               ),
             ),
             Text(
               isReturn ? "IN" : "OUT",
-              style: TextStyle(
+              style: GoogleFonts.outfit(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
                 color: isReturn ? Colors.blue : Colors.orange,
@@ -345,11 +348,14 @@ class _SecurityDashboardState extends State<SecurityDashboard> {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Text(
             label,
-            style: const TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 12,
               color: AppColors.textSecondary,
             ),

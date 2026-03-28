@@ -133,7 +133,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                       const SizedBox(width: 8),
                       Text(
                         "Showing requests for: ${DateFormat('dd MMM yyyy').format(_selectedDate!)}",
-                        style: const TextStyle(
+                        style: GoogleFonts.outfit(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
@@ -199,7 +199,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
           }
         },
         selectedColor: AppColors.primary,
-        labelStyle: TextStyle(
+        labelStyle: GoogleFonts.outfit(
           color: isSelected ? Colors.white : AppColors.textPrimary,
           fontSize: 12,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

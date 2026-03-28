@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
@@ -61,9 +62,12 @@ class _SecurityScannerScreenState extends State<SecurityScannerScreen> {
                 right: 0,
                 child: Column(
                   children: [
-                    const Text(
+                     Text(
                       "Align QR Code within the frame",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(

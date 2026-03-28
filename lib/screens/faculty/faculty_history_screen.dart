@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_theme.dart';
 import '../../models/gate_pass.dart';
 import '../../providers/gate_pass_provider.dart';
 import '../../widgets/expandable_text.dart';
+import '../../services/pdf_service.dart';
 
 class FacultyHistoryScreen extends StatefulWidget {
   final String department;
-  const FacultyHistoryScreen({super.key, required this.department});
+  final bool isHod;
+  const FacultyHistoryScreen({super.key, required this.department, this.isHod = false});
 
   @override
   State<FacultyHistoryScreen> createState() => _FacultyHistoryScreenState();
@@ -29,6 +32,7 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
   void _fetchData() {
     context.read<GatePassProvider>().listenToFilteredActivity(
       department: widget.department,
+      isHod: widget.isHod,
       status: _selectedStatus,
       date: _selectedDate,
       semester: _selectedSemester,
@@ -44,8 +48,21 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text("${widget.department} History"),
+        title: Text(
+          "${widget.department} Gate Pass History",
+          style: GoogleFonts.outfit(fontSize: 16),
+        ),
         actions: [
+          IconButton(
+            onPressed: () => PdfService.exportDepartmentReport(
+              department: widget.department,
+              context: context,
+              history: history,
+              date: _selectedDate,
+            ),
+            icon: const Icon(Icons.picture_as_pdf_rounded),
+            tooltip: "Export as PDF",
+          ),
           IconButton(
             onPressed: () {
               setState(() {
@@ -60,32 +77,34 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildFilterBar(),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                _fetchData();
-                await Future.delayed(const Duration(seconds: 1));
-              },
-              child: history.isEmpty
-                  ? ListView(
-                      children: const [
-                        SizedBox(height: 100),
-                        Center(child: Text("No records found.")),
-                      ],
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: history.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) =>
-                          _buildHistoryCard(history[index]),
-                    ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildFilterBar(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  _fetchData();
+                  await Future.delayed(const Duration(seconds: 1));
+                },
+                child: history.isEmpty
+                    ? ListView(
+                        children: const [
+                          SizedBox(height: 100),
+                          Center(child: Text("No records found.")),
+                        ],
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: history.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) =>
+                            _buildHistoryCard(history[index]),
+                      ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -219,7 +238,7 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
         child: DropdownButton<T>(
           value: value,
           isExpanded: true,
-          style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
+          style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textPrimary),
           items: items.map((i) {
             return DropdownMenuItem<T>(value: i, child: Text(itemLabel(i)));
           }).toList(),
@@ -249,14 +268,14 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
                   children: [
                     Text(
                       request.studentName,
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                     Text(
                       "S${request.semester} • ${request.registerNumber}",
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -277,14 +296,14 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
                 const SizedBox(width: 8),
                 Text(
                   "${DateFormat('dd MMM').format(request.date)} • ${request.fromTime} - ${request.toTime}",
-                  style: const TextStyle(fontSize: 13),
+                  style: GoogleFonts.outfit(fontSize: 13),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             ExpandableText(
               text: request.reason,
-              style: const TextStyle(
+              style: GoogleFonts.outfit(
                 fontSize: 14,
                 color: AppColors.textPrimary,
               ),
@@ -334,7 +353,7 @@ class _FacultyHistoryScreenState extends State<FacultyHistoryScreen> {
       ),
       child: Text(
         label.toUpperCase(),
-        style: TextStyle(
+        style: GoogleFonts.outfit(
           color: color,
           fontSize: 10,
           fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_theme.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -29,9 +30,9 @@ class SplashScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               // App Name
-              const Text(
+               Text(
                 "Smart Gate Pass",
-                style: TextStyle(
+                style: GoogleFonts.outfit(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
@@ -39,9 +40,12 @@ class SplashScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+               Text(
                 "Secure Campus Navigation",
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 48),
               // Loading indicator
